@@ -254,7 +254,23 @@ For support, bug reports, or feature requests:
 
 ## 🌟 Screenshots
 
-*Coming soon - Add screenshots of your dashboards here*
+### Login Page
+![Login Page](screenshots/login.png)
+
+### Main Dashboard
+![Main Dashboard](screenshots/dashboard.png)
+
+### Poultry Management Dashboard
+![Poultry Dashboard](screenshots/poultry-dashboard.png)
+
+### Financial Dashboard
+![Financial Dashboard](screenshots/financial-dashboard.png)
+
+### Batch Management
+![Batch Management](screenshots/batch-management.png)
+
+### Feed Recording
+![Feed Recording](screenshots/feed-recording.png)
 
 ---
 
