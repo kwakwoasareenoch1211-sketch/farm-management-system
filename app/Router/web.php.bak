@@ -1,0 +1,7 @@
+﻿<?php
+return [
+    'login' => ['AuthController', 'showLogin'],
+    'logout' => ['AuthController', 'logout'],
+    '/' => ['AdminController', 'dashboard'],
+    'admin' => ['AdminController', 'dashboard'],
+];

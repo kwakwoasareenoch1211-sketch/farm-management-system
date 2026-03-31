@@ -1,0 +1,19 @@
+# Dependencies
+vendor/
+node_modules/
+
+# Environment & secrets
+.env
+*.env
+
+# Storage (contains one-time admin init password, logs, etc.)
+storage/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,101 @@
+<?php
+$reportRows = $reportRows ?? [];
+$totals = $totals ?? [];
+$batchRows = $batchRows ?? [];
+
+$totalMortality = (float)($totals['total_mortality'] ?? 0);
+$totalRecords = (int)($totals['total_records'] ?? 0);
+?>
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Mortality Report</h2>
+            <p class="text-muted mb-0">Track bird losses, causes, and mortality patterns by batch.</p>
+        </div>
+        <a href="<?= rtrim(BASE_URL, '/') ?>/reports" class="btn btn-outline-secondary">Back</a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body">
+                    <div class="text-muted small">Total Mortality</div>
+                    <div class="fs-4 fw-bold"><?= number_format($totalMortality, 2) ?></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body">
+                    <div class="text-muted small">Mortality Records</div>
+                    <div class="fs-4 fw-bold"><?= number_format($totalRecords) ?></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Mortality Records</h5>
+
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Batch Code</th>
+                                    <th>Batch Name</th>
+                                    <th>Quantity</th>
+                                    <th>Cause</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (!empty($reportRows)): ?>
+                                    <?php foreach ($reportRows as $row): ?>
+                                        <tr>
+                                            <td><?= htmlspecialchars($row['record_date'] ?? '') ?></td>
+                                            <td><?= htmlspecialchars($row['batch_code'] ?? '') ?></td>
+                                            <td><?= htmlspecialchars($row['batch_name'] ?? '') ?></td>
+                                            <td><?= number_format((float)($row['quantity'] ?? 0), 2) ?></td>
+                                            <td><?= htmlspecialchars($row['cause'] ?? '') ?></td>
+                                            <td><?= htmlspecialchars($row['notes'] ?? '') ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-4">No mortality data available.</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Mortality by Batch</h5>
+
+                    <?php if (!empty($batchRows)): ?>
+                        <?php foreach ($batchRows as $row): ?>
+                            <div class="border rounded-4 p-3 mb-2 bg-light">
+                                <div class="fw-semibold"><?= htmlspecialchars($row['batch_code'] ?? '') ?></div>
+                                <div class="small text-muted"><?= htmlspecialchars($row['batch_name'] ?? '') ?></div>
+                                <div class="small mt-1">Total Mortality: <strong><?= number_format((float)($row['total_mortality'] ?? 0), 2) ?></strong></div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="text-muted">No batch mortality summary available.</div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

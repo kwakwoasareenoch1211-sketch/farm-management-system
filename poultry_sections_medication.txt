@@ -1,0 +1,62 @@
+<!-- MEDICAL SUPPLIES SECTION -->
+<div class="pou-card p-4 mb-4" style="border-left:4px solid #8b5cf6;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h5 class="fw-bold mb-1"><i class="bi bi-capsule-pill text-primary me-2"></i>Medical Supplies & Medication</h5>
+            <p class="text-muted small mb-0">Medication stock levels, usage records, and treatment costs</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="<?= $base ?>/medication/create" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle me-1"></i>Record Medication</a>
+            <a href="<?= $base ?>/inventory/receipts/create" class="btn btn-outline-primary btn-sm"><i class="bi bi-box-arrow-in-down me-1"></i>Receive Medical Stock</a>
+        </div>
+    </div>
+    
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <div class="pou-soft text-center">
+                <div class="small text-muted">Medication Records</div>
+                <div class="fw-bold fs-5"><?= number_format($medRecords) ?></div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="pou-soft text-center">
+                <div class="small text-muted">Total Med Cost</div>
+                <div class="fw-bold fs-5">GHS <?= number_format($medCost, 2) ?></div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="pou-soft text-center">
+                <div class="small text-muted">Low Med Stock</div>
+                <div class="fw-bold fs-5 <?= count($medicationItems) > 0 ? 'text-danger' : 'text-success' ?>"><?= count($medicationItems) ?></div>
+            </div>
+        </div>
+    </div>
+
+    <?php if (!empty($medicationItems)): ?>
+        <div class="alert alert-warning mb-3">
+            <strong><i class="bi bi-exclamation-triangle me-2"></i><?= count($medicationItems) ?> medication item(s) below reorder level</strong>
+        </div>
+        <div class="row g-2">
+            <?php foreach ($medicationItems as $item): ?>
+                <div class="col-md-4">
+                    <div class="pou-soft">
+                        <div class="fw-semibold small"><?= htmlspecialchars($item['item_name'] ?? '') ?></div>
+                        <div class="small text-muted">
+                            Stock: <span class="text-danger fw-bold"><?= number_format((float)($item['current_stock'] ?? 0), 2) ?></span> | 
+                            Reorder: <?= number_format((float)($item['reorder_level'] ?? 0), 2) ?>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php else: ?>
+        <div class="alert alert-success mb-0">
+            <i class="bi bi-check-circle me-2"></i>All medication stock levels are healthy
+        </div>
+    <?php endif; ?>
+
+    <div class="mt-3 d-flex gap-2">
+        <a href="<?= $base ?>/medication" class="btn btn-outline-primary btn-sm">View All Medication Records</a>
+        <a href="<?= $base ?>/inventory/items" class="btn btn-outline-secondary btn-sm">Manage Medical Items</a>
+    </div>
+</div>

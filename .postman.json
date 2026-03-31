@@ -1,0 +1,451 @@
+{
+  "workspace_id": null,
+  "collection_id": null,
+  "environment_id": null,
+  "collection": {
+    "info": {
+      "name": "FarmApp API",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+      "description": "FarmApp — Poultry Farm Management System. Base URL: http://localhost/farmapp. Auth: session cookie via POST /login/submit."
+    },
+    "variable": [
+      { "key": "base_url", "value": "http://localhost/farmapp", "type": "string" }
+    ],
+    "item": [
+      {
+        "name": "Auth",
+        "item": [
+          {
+            "name": "Show Login Page",
+            "request": { "method": "GET", "url": "{{base_url}}/login" }
+          },
+          {
+            "name": "Login",
+            "event": [{ "listen": "test", "script": { "exec": [
+              "pm.test('Login redirects or succeeds', function() {",
+              "  pm.expect(pm.response.code).to.be.oneOf([200, 302]);",
+              "});"
+            ], "type": "text/javascript" }}],
+            "request": {
+              "method": "POST",
+              "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+              "body": { "mode": "urlencoded", "urlencoded": [
+                { "key": "username", "value": "admin" },
+                { "key": "password", "value": "admin123" }
+              ]},
+              "url": "{{base_url}}/login/submit"
+            }
+          },
+          {
+            "name": "Logout",
+            "request": { "method": "GET", "url": "{{base_url}}/logout" }
+          }
+        ]
+      },
+      {
+        "name": "Dashboards",
+        "item": [
+          { "name": "Admin Dashboard",     "request": { "method": "GET", "url": "{{base_url}}/admin" } },
+          { "name": "Poultry Dashboard",   "request": { "method": "GET", "url": "{{base_url}}/poultry" } },
+          { "name": "Financial Dashboard", "request": { "method": "GET", "url": "{{base_url}}/financial" } },
+          { "name": "Economic Dashboard",  "request": { "method": "GET", "url": "{{base_url}}/economic" } },
+          { "name": "Inventory Dashboard", "request": { "method": "GET", "url": "{{base_url}}/inventory" } },
+          { "name": "Reports Dashboard",   "request": { "method": "GET", "url": "{{base_url}}/reports" } },
+          { "name": "Sales Dashboard",     "request": { "method": "GET", "url": "{{base_url}}/sales" } },
+          { "name": "Users Dashboard",     "request": { "method": "GET", "url": "{{base_url}}/users" } },
+          { "name": "Settings Dashboard",  "request": { "method": "GET", "url": "{{base_url}}/settings" } }
+        ]
+      },
+      {
+        "name": "Batches",
+        "item": [
+          { "name": "List Batches",   "request": { "method": "GET",  "url": "{{base_url}}/batches" } },
+          { "name": "Create Form",    "request": { "method": "GET",  "url": "{{base_url}}/batches/create" } },
+          { "name": "Store Batch",    "request": { "method": "POST", "url": "{{base_url}}/batches/store",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "batch_code",          "value": "B-TEST-001" },
+              { "key": "batch_name",          "value": "Test Batch" },
+              { "key": "production_purpose",  "value": "broiler" },
+              { "key": "initial_quantity",    "value": "500" },
+              { "key": "initial_unit_cost",   "value": "5.00" },
+              { "key": "start_date",          "value": "2026-03-01" },
+              { "key": "farm_id",             "value": "1" }
+            ]}
+          }},
+          { "name": "View Batch",     "request": { "method": "GET",  "url": { "raw": "{{base_url}}/batches/view?id=1", "query": [{ "key": "id", "value": "1" }] } } },
+          { "name": "Edit Form",      "request": { "method": "GET",  "url": { "raw": "{{base_url}}/batches/edit?id=1", "query": [{ "key": "id", "value": "1" }] } } },
+          { "name": "Delete Batch",   "request": { "method": "GET",  "url": { "raw": "{{base_url}}/batches/delete?id=1", "query": [{ "key": "id", "value": "1" }] } } }
+        ]
+      },
+      {
+        "name": "Feed",
+        "item": [
+          { "name": "List Feed Records", "request": { "method": "GET", "url": "{{base_url}}/feed" } },
+          { "name": "Create Form",       "request": { "method": "GET", "url": "{{base_url}}/feed/create" } },
+          { "name": "Store Feed",        "request": { "method": "POST", "url": "{{base_url}}/feed/store",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "batch_id",    "value": "1" },
+              { "key": "record_date", "value": "2026-03-26" },
+              { "key": "quantity_kg", "value": "50" },
+              { "key": "unit_cost",   "value": "2.50" }
+            ]}
+          }},
+          { "name": "Edit Form",   "request": { "method": "GET", "url": { "raw": "{{base_url}}/feed/edit?id=1", "query": [{ "key": "id", "value": "1" }] } } },
+          { "name": "Delete Feed", "request": { "method": "GET", "url": { "raw": "{{base_url}}/feed/delete?id=1", "query": [{ "key": "id", "value": "1" }] } } }
+        ]
+      },
+      {
+        "name": "Mortality",
+        "item": [
+          { "name": "List",        "request": { "method": "GET",  "url": "{{base_url}}/mortality" } },
+          { "name": "Create Form", "request": { "method": "GET",  "url": "{{base_url}}/mortality/create" } },
+          { "name": "Store",       "request": { "method": "POST", "url": "{{base_url}}/mortality/store",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "batch_id",    "value": "1" },
+              { "key": "record_date", "value": "2026-03-26" },
+              { "key": "quantity",    "value": "3" },
+              { "key": "cause",       "value": "disease" }
+            ]}
+          }},
+          { "name": "Edit Form",     "request": { "method": "GET", "url": { "raw": "{{base_url}}/mortality/edit?id=1", "query": [{ "key": "id", "value": "1" }] } } },
+          { "name": "Delete",        "request": { "method": "GET", "url": { "raw": "{{base_url}}/mortality/delete?id=1", "query": [{ "key": "id", "value": "1" }] } } }
+        ]
+      },
+      {
+        "name": "Egg Production",
+        "item": [
+          { "name": "List",        "request": { "method": "GET",  "url": "{{base_url}}/egg-production" } },
+          { "name": "Create Form", "request": { "method": "GET",  "url": "{{base_url}}/egg-production/create" } },
+          { "name": "Store",       "request": { "method": "POST", "url": "{{base_url}}/egg-production/store",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "batch_id",    "value": "1" },
+              { "key": "record_date", "value": "2026-03-26" },
+              { "key": "eggs_collected", "value": "300" }
+            ]}
+          }},
+          { "name": "Edit Form", "request": { "method": "GET", "url": { "raw": "{{base_url}}/egg-production/edit?id=1", "query": [{ "key": "id", "value": "1" }] } } },
+          { "name": "Delete",    "request": { "method": "GET", "url": { "raw": "{{base_url}}/egg-production/delete?id=1", "query": [{ "key": "id", "value": "1" }] } } }
+        ]
+      },
+      {
+        "name": "Vaccination",
+        "item": [
+          { "name": "List",        "request": { "method": "GET",  "url": "{{base_url}}/vaccination" } },
+          { "name": "Create Form", "request": { "method": "GET",  "url": "{{base_url}}/vaccination/create" } },
+          { "name": "Store",       "request": { "method": "POST", "url": "{{base_url}}/vaccination/store",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "batch_id",     "value": "1" },
+              { "key": "record_date",  "value": "2026-03-26" },
+              { "key": "vaccine_name", "value": "Newcastle" },
+              { "key": "cost_amount",  "value": "50.00" }
+            ]}
+          }},
+          { "name": "Edit Form", "request": { "method": "GET", "url": { "raw": "{{base_url}}/vaccination/edit?id=1", "query": [{ "key": "id", "value": "1" }] } } },
+          { "name": "Delete",    "request": { "method": "GET", "url": { "raw": "{{base_url}}/vaccination/delete?id=1", "query": [{ "key": "id", "value": "1" }] } } }
+        ]
+      },
+      {
+        "name": "Medication",
+        "item": [
+          { "name": "List",        "request": { "method": "GET",  "url": "{{base_url}}/medication" } },
+          { "name": "Create Form", "request": { "method": "GET",  "url": "{{base_url}}/medication/create" } },
+          { "name": "Store",       "request": { "method": "POST", "url": "{{base_url}}/medication/store",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "batch_id",       "value": "1" },
+              { "key": "record_date",    "value": "2026-03-26" },
+              { "key": "medication_name","value": "Amoxicillin" },
+              { "key": "quantity_used",  "value": "10" },
+              { "key": "unit_cost",      "value": "5.00" }
+            ]}
+          }},
+          { "name": "Edit Form", "request": { "method": "GET", "url": { "raw": "{{base_url}}/medication/edit?id=1", "query": [{ "key": "id", "value": "1" }] } } },
+          { "name": "Delete",    "request": { "method": "GET", "url": { "raw": "{{base_url}}/medication/delete?id=1", "query": [{ "key": "id", "value": "1" }] } } }
+        ]
+      },
+      {
+        "name": "Weights",
+        "item": [
+          { "name": "List",        "request": { "method": "GET",  "url": "{{base_url}}/weights" } },
+          { "name": "Create Form", "request": { "method": "GET",  "url": "{{base_url}}/weights/create" } },
+          { "name": "Store",       "request": { "method": "POST", "url": "{{base_url}}/weights/store",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "batch_id",          "value": "1" },
+              { "key": "record_date",       "value": "2026-03-26" },
+              { "key": "average_weight_kg", "value": "1.85" },
+              { "key": "sample_size",       "value": "20" }
+            ]}
+          }},
+          { "name": "Edit Form", "request": { "method": "GET", "url": { "raw": "{{base_url}}/weights/edit?id=1", "query": [{ "key": "id", "value": "1" }] } } },
+          { "name": "Delete",    "request": { "method": "GET", "url": { "raw": "{{base_url}}/weights/delete?id=1", "query": [{ "key": "id", "value": "1" }] } } }
+        ]
+      },
+      {
+        "name": "Sales",
+        "item": [
+          { "name": "Sales Dashboard", "request": { "method": "GET",  "url": "{{base_url}}/sales" } },
+          { "name": "Create Form",     "request": { "method": "GET",  "url": "{{base_url}}/sales/create" } },
+          { "name": "Store Sale",      "request": { "method": "POST", "url": "{{base_url}}/sales/store",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "sale_date",      "value": "2026-03-26" },
+              { "key": "sale_type",      "value": "eggs" },
+              { "key": "batch_id",       "value": "1" },
+              { "key": "quantity",       "value": "100" },
+              { "key": "unit_price",     "value": "0.50" },
+              { "key": "total_amount",   "value": "50.00" },
+              { "key": "amount_paid",    "value": "50.00" },
+              { "key": "payment_status", "value": "paid" }
+            ]}
+          }},
+          { "name": "Edit Form", "request": { "method": "GET", "url": { "raw": "{{base_url}}/sales/edit?id=1", "query": [{ "key": "id", "value": "1" }] } } },
+          { "name": "Delete",    "request": { "method": "GET", "url": { "raw": "{{base_url}}/sales/delete?id=1", "query": [{ "key": "id", "value": "1" }] } } }
+        ]
+      },
+      {
+        "name": "Customers",
+        "item": [
+          { "name": "List",        "request": { "method": "GET",  "url": "{{base_url}}/customers" } },
+          { "name": "Create Form", "request": { "method": "GET",  "url": "{{base_url}}/customers/create" } },
+          { "name": "Store",       "request": { "method": "POST", "url": "{{base_url}}/customers/store",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "customer_name", "value": "Test Customer" },
+              { "key": "phone",         "value": "0200000000" },
+              { "key": "email",         "value": "test@example.com" }
+            ]}
+          }},
+          { "name": "Edit Form", "request": { "method": "GET", "url": { "raw": "{{base_url}}/customers/edit?id=1", "query": [{ "key": "id", "value": "1" }] } } },
+          { "name": "Delete",    "request": { "method": "GET", "url": { "raw": "{{base_url}}/customers/delete?id=1", "query": [{ "key": "id", "value": "1" }] } } }
+        ]
+      },
+      {
+        "name": "Expenses",
+        "item": [
+          { "name": "List",        "request": { "method": "GET",  "url": "{{base_url}}/expenses" } },
+          { "name": "Create Form", "request": { "method": "GET",  "url": "{{base_url}}/expenses/create" } },
+          { "name": "Store",       "request": { "method": "POST", "url": "{{base_url}}/expenses/store",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "expense_date",   "value": "2026-03-26" },
+              { "key": "expense_title",  "value": "Fuel" },
+              { "key": "amount",         "value": "120.00" },
+              { "key": "payment_status", "value": "paid" },
+              { "key": "payment_method", "value": "cash" }
+            ]}
+          }},
+          { "name": "Edit Form", "request": { "method": "GET", "url": { "raw": "{{base_url}}/expenses/edit?id=1", "query": [{ "key": "id", "value": "1" }] } } },
+          { "name": "Delete",    "request": { "method": "GET", "url": { "raw": "{{base_url}}/expenses/delete?id=1", "query": [{ "key": "id", "value": "1" }] } } }
+        ]
+      },
+      {
+        "name": "Capital",
+        "item": [
+          { "name": "List",        "request": { "method": "GET",  "url": "{{base_url}}/capital" } },
+          { "name": "Create Form", "request": { "method": "GET",  "url": "{{base_url}}/capital/create" } },
+          { "name": "Store",       "request": { "method": "POST", "url": "{{base_url}}/capital/store",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "farm_id",      "value": "1" },
+              { "key": "entry_date",   "value": "2026-03-26" },
+              { "key": "capital_type", "value": "owner_equity" },
+              { "key": "title",        "value": "Initial Investment" },
+              { "key": "amount",       "value": "10000.00" }
+            ]}
+          }},
+          { "name": "Edit Form", "request": { "method": "GET", "url": { "raw": "{{base_url}}/capital/edit?id=1", "query": [{ "key": "id", "value": "1" }] } } },
+          { "name": "Delete",    "request": { "method": "GET", "url": { "raw": "{{base_url}}/capital/delete?id=1", "query": [{ "key": "id", "value": "1" }] } } }
+        ]
+      },
+      {
+        "name": "Investments",
+        "item": [
+          { "name": "List",        "request": { "method": "GET",  "url": "{{base_url}}/investments" } },
+          { "name": "View",        "request": { "method": "GET",  "url": { "raw": "{{base_url}}/investments/view?id=1", "query": [{ "key": "id", "value": "1" }] } } },
+          { "name": "Create Form", "request": { "method": "GET",  "url": "{{base_url}}/investments/create" } },
+          { "name": "Store",       "request": { "method": "POST", "url": "{{base_url}}/investments/store",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "farm_id",          "value": "1" },
+              { "key": "investment_date",  "value": "2026-03-26" },
+              { "key": "investment_type",  "value": "equipment" },
+              { "key": "title",            "value": "Feed Mixer" },
+              { "key": "amount",           "value": "5000.00" },
+              { "key": "expected_return",  "value": "8000.00" },
+              { "key": "useful_life_years","value": "5" },
+              { "key": "status",           "value": "active" }
+            ]}
+          }},
+          { "name": "Edit Form", "request": { "method": "GET", "url": { "raw": "{{base_url}}/investments/edit?id=1", "query": [{ "key": "id", "value": "1" }] } } },
+          { "name": "Delete",    "request": { "method": "GET", "url": { "raw": "{{base_url}}/investments/delete?id=1", "query": [{ "key": "id", "value": "1" }] } } },
+          {
+            "name": "Performance Intelligence (AJAX)",
+            "event": [{ "listen": "test", "script": { "exec": [
+              "pm.test('Returns JSON', function() {",
+              "  pm.response.to.have.header('Content-Type', /json/);",
+              "});",
+              "pm.test('Status 200', function() {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Has suggested_return', function() {",
+              "  const d = pm.response.json();",
+              "  pm.expect(d).to.have.property('suggested_return');",
+              "  pm.expect(d.suggested_return).to.be.a('number').and.above(0);",
+              "});",
+              "pm.test('Has suggested_investor_share', function() {",
+              "  const d = pm.response.json();",
+              "  pm.expect(d).to.have.property('suggested_investor_share');",
+              "});",
+              "pm.test('No error field', function() {",
+              "  const d = pm.response.json();",
+              "  pm.expect(d).to.not.have.property('error');",
+              "});"
+            ], "type": "text/javascript" }}],
+            "request": {
+              "method": "GET",
+              "header": [{ "key": "X-Requested-With", "value": "XMLHttpRequest" }],
+              "url": {
+                "raw": "{{base_url}}/investments/performance?type=equipment&amount=5000&life=5",
+                "query": [
+                  { "key": "type",   "value": "equipment" },
+                  { "key": "amount", "value": "5000" },
+                  { "key": "life",   "value": "5" }
+                ]
+              }
+            }
+          },
+          {
+            "name": "Performance — Eggs type",
+            "event": [{ "listen": "test", "script": { "exec": [
+              "pm.test('Status 200', function() { pm.response.to.have.status(200); });",
+              "pm.test('Has return_basis', function() {",
+              "  const d = pm.response.json();",
+              "  pm.expect(d).to.have.property('return_basis');",
+              "});"
+            ], "type": "text/javascript" }}],
+            "request": {
+              "method": "GET",
+              "header": [{ "key": "X-Requested-With", "value": "XMLHttpRequest" }],
+              "url": {
+                "raw": "{{base_url}}/investments/performance?type=eggs&amount=3000&life=2",
+                "query": [
+                  { "key": "type",   "value": "eggs" },
+                  { "key": "amount", "value": "3000" },
+                  { "key": "life",   "value": "2" }
+                ]
+              }
+            }
+          },
+          {
+            "name": "Performance — Missing amount (error case)",
+            "event": [{ "listen": "test", "script": { "exec": [
+              "pm.test('Returns error for missing amount', function() {",
+              "  const d = pm.response.json();",
+              "  pm.expect(d).to.have.property('error');",
+              "});"
+            ], "type": "text/javascript" }}],
+            "request": {
+              "method": "GET",
+              "header": [{ "key": "X-Requested-With", "value": "XMLHttpRequest" }],
+              "url": {
+                "raw": "{{base_url}}/investments/performance?type=equipment&amount=0&life=5",
+                "query": [
+                  { "key": "type",   "value": "equipment" },
+                  { "key": "amount", "value": "0" },
+                  { "key": "life",   "value": "5" }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "Inventory",
+        "item": [
+          { "name": "Dashboard",          "request": { "method": "GET", "url": "{{base_url}}/inventory" } },
+          { "name": "Items List",         "request": { "method": "GET", "url": "{{base_url}}/inventory/items" } },
+          { "name": "Create Item Form",   "request": { "method": "GET", "url": "{{base_url}}/inventory/items/create" } },
+          { "name": "Store Item",         "request": { "method": "POST", "url": "{{base_url}}/inventory/items/store",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "item_name",      "value": "Broiler Feed 50kg" },
+              { "key": "category",       "value": "feed" },
+              { "key": "unit_of_measure","value": "bag" },
+              { "key": "unit_cost",      "value": "85.00" },
+              { "key": "reorder_level",  "value": "10" },
+              { "key": "farm_id",        "value": "1" }
+            ]}
+          }},
+          { "name": "Edit Item Form",     "request": { "method": "GET", "url": { "raw": "{{base_url}}/inventory/items/edit?id=1", "query": [{ "key": "id", "value": "1" }] } } },
+          { "name": "Delete Item",        "request": { "method": "GET", "url": { "raw": "{{base_url}}/inventory/items/delete?id=1", "query": [{ "key": "id", "value": "1" }] } } },
+          { "name": "Receipts List",      "request": { "method": "GET", "url": "{{base_url}}/inventory/receipts" } },
+          { "name": "Create Receipt Form","request": { "method": "GET", "url": "{{base_url}}/inventory/receipts/create" } },
+          { "name": "Store Receipt",      "request": { "method": "POST", "url": "{{base_url}}/inventory/receipts/store",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "item_id",       "value": "1" },
+              { "key": "quantity",      "value": "20" },
+              { "key": "unit_cost",     "value": "85.00" },
+              { "key": "receipt_date",  "value": "2026-03-26" }
+            ]}
+          }},
+          { "name": "Issues List",        "request": { "method": "GET", "url": "{{base_url}}/inventory/issues" } },
+          { "name": "Create Issue Form",  "request": { "method": "GET", "url": "{{base_url}}/inventory/issues/create" } },
+          { "name": "Store Issue",        "request": { "method": "POST", "url": "{{base_url}}/inventory/issues/store",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "item_id",    "value": "1" },
+              { "key": "batch_id",   "value": "1" },
+              { "key": "quantity",   "value": "5" },
+              { "key": "issue_date", "value": "2026-03-26" }
+            ]}
+          }},
+          { "name": "Low Stock",          "request": { "method": "GET", "url": "{{base_url}}/inventory/low-stock" } }
+        ]
+      },
+      {
+        "name": "Reports",
+        "item": [
+          { "name": "Dashboard",           "request": { "method": "GET", "url": "{{base_url}}/reports" } },
+          { "name": "Batch Performance",   "request": { "method": "GET", "url": "{{base_url}}/reports/batch-performance" } },
+          { "name": "Feed Report",         "request": { "method": "GET", "url": "{{base_url}}/reports/feed" } },
+          { "name": "Mortality Report",    "request": { "method": "GET", "url": "{{base_url}}/reports/mortality" } },
+          { "name": "Vaccination Report",  "request": { "method": "GET", "url": "{{base_url}}/reports/vaccination" } },
+          { "name": "Medication Report",   "request": { "method": "GET", "url": "{{base_url}}/reports/medication" } },
+          { "name": "Weight Report",       "request": { "method": "GET", "url": "{{base_url}}/reports/weight" } },
+          { "name": "Egg Production",      "request": { "method": "GET", "url": "{{base_url}}/reports/egg-production" } },
+          { "name": "Stock Position",      "request": { "method": "GET", "url": "{{base_url}}/reports/stock-position" } },
+          { "name": "Low Stock",           "request": { "method": "GET", "url": "{{base_url}}/reports/low-stock" } },
+          { "name": "Stock Movement",      "request": { "method": "GET", "url": "{{base_url}}/reports/stock-movement" } },
+          { "name": "Inventory Valuation", "request": { "method": "GET", "url": "{{base_url}}/reports/inventory-valuation" } },
+          { "name": "Sales Report",        "request": { "method": "GET", "url": "{{base_url}}/reports/sales" } },
+          { "name": "Expense Report",      "request": { "method": "GET", "url": "{{base_url}}/reports/expenses" } },
+          { "name": "Profit & Loss",       "request": { "method": "GET", "url": "{{base_url}}/reports/profit-loss" } },
+          { "name": "Forecast",            "request": { "method": "GET", "url": "{{base_url}}/reports/forecast" } },
+          { "name": "Business Health",     "request": { "method": "GET", "url": "{{base_url}}/reports/business-health" } },
+          { "name": "Decision Recommendations", "request": { "method": "GET", "url": "{{base_url}}/reports/decisions" } },
+          { "name": "Custom Reports",      "request": { "method": "GET", "url": "{{base_url}}/reports/custom" } },
+          { "name": "Export Center",       "request": { "method": "GET", "url": "{{base_url}}/reports/export" } }
+        ]
+      },
+      {
+        "name": "Economic & Accounting",
+        "item": [
+          { "name": "Business Health",  "request": { "method": "GET", "url": "{{base_url}}/business-health" } },
+          { "name": "Going Concern",    "request": { "method": "GET", "url": "{{base_url}}/going-concern" } },
+          { "name": "Decision Support", "request": { "method": "GET", "url": "{{base_url}}/decision-support" } },
+          { "name": "Profit & Loss",    "request": { "method": "GET", "url": "{{base_url}}/profit-loss" } },
+          { "name": "Accounting",       "request": { "method": "GET", "url": "{{base_url}}/accounting" } },
+          { "name": "Forecasts",        "request": { "method": "GET", "url": "{{base_url}}/forecasts" } },
+          { "name": "Decisions",        "request": { "method": "GET", "url": "{{base_url}}/decisions" } }
+        ]
+      }
+    ]
+  }
+}

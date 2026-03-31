@@ -1,0 +1,68 @@
+<!-- FEED MANAGEMENT SECTION -->
+<div class="pou-card p-4 mb-4" style="border-left:4px solid #22c55e;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h5 class="fw-bold mb-1"><i class="bi bi-basket2-fill text-success me-2"></i>Feed Inventory & Usage</h5>
+            <p class="text-muted small mb-0">Feed stock levels, usage records, and cost tracking</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="<?= $base ?>/feed/create" class="btn btn-success btn-sm"><i class="bi bi-plus-circle me-1"></i>Record Feed</a>
+            <a href="<?= $base ?>/inventory/receipts/create" class="btn btn-outline-success btn-sm"><i class="bi bi-box-arrow-in-down me-1"></i>Receive Feed</a>
+        </div>
+    </div>
+    
+    <div class="row g-3 mb-3">
+        <div class="col-md-3">
+            <div class="pou-soft text-center">
+                <div class="small text-muted">Feed Records</div>
+                <div class="fw-bold fs-5"><?= number_format($totalFeedRecords) ?></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="pou-soft text-center">
+                <div class="small text-muted">Total Feed Used</div>
+                <div class="fw-bold fs-5"><?= number_format($totalFeedKg, 2) ?> kg</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="pou-soft text-center">
+                <div class="small text-muted">Total Feed Cost</div>
+                <div class="fw-bold fs-5">GHS <?= number_format($totalFeedCost, 2) ?></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="pou-soft text-center">
+                <div class="small text-muted">Low Feed Stock</div>
+                <div class="fw-bold fs-5 <?= count($feedItems) > 0 ? 'text-danger' : 'text-success' ?>"><?= count($feedItems) ?></div>
+            </div>
+        </div>
+    </div>
+
+    <?php if (!empty($feedItems)): ?>
+        <div class="alert alert-warning mb-3">
+            <strong><i class="bi bi-exclamation-triangle me-2"></i><?= count($feedItems) ?> feed item(s) below reorder level</strong>
+        </div>
+        <div class="row g-2">
+            <?php foreach ($feedItems as $item): ?>
+                <div class="col-md-4">
+                    <div class="pou-soft">
+                        <div class="fw-semibold small"><?= htmlspecialchars($item['item_name'] ?? '') ?></div>
+                        <div class="small text-muted">
+                            Stock: <span class="text-danger fw-bold"><?= number_format((float)($item['current_stock'] ?? 0), 2) ?></span> | 
+                            Reorder: <?= number_format((float)($item['reorder_level'] ?? 0), 2) ?>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php else: ?>
+        <div class="alert alert-success mb-0">
+            <i class="bi bi-check-circle me-2"></i>All feed stock levels are healthy
+        </div>
+    <?php endif; ?>
+
+    <div class="mt-3 d-flex gap-2">
+        <a href="<?= $base ?>/feed" class="btn btn-outline-success btn-sm">View All Feed Records</a>
+        <a href="<?= $base ?>/inventory/items" class="btn btn-outline-secondary btn-sm">Manage Feed Items</a>
+    </div>
+</div>
