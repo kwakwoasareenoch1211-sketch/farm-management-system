@@ -223,8 +223,8 @@ Release Date: March 31, 2026
 ## 📞 Support
 
 For support, bug reports, or feature requests:
-- Email: farmapp@example.com
-- Documentation: See `/docs` folder
+- Email: kwakwoasareenoch1211@gmail.com
+- GitHub Issues: [Report a bug](https://github.com/kwakwoasareenoch1211-sketch/farm-management-system/issues)
 
 ---
 
