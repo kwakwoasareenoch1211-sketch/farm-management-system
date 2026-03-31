@@ -254,23 +254,13 @@ For support, bug reports, or feature requests:
 
 ## 🌟 Screenshots
 
-### Login Page
-![Login Page](screenshots/login.png)
-
-### Main Dashboard
-![Main Dashboard](screenshots/dashboard.png)
-
-### Poultry Management Dashboard
-![Poultry Dashboard](screenshots/poultry-dashboard.png)
-
-### Financial Dashboard
-![Financial Dashboard](screenshots/financial-dashboard.png)
-
-### Batch Management
-![Batch Management](screenshots/batch-management.png)
-
-### Feed Recording
-![Feed Recording](screenshots/feed-recording.png)
+Screenshots coming soon! The system includes:
+- Clean, modern login interface
+- Comprehensive dashboard with real-time statistics
+- Poultry operations management interface
+- Financial tracking and reporting dashboards
+- Batch management with lifecycle tracking
+- Simple, direct-entry forms for feed, medication, and vaccination
 
 ---
 
