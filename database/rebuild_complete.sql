@@ -435,6 +435,9 @@ CREATE TABLE liabilities (
     due_date DATE,
     status ENUM('active','paid','defaulted') DEFAULT 'active',
     notes TEXT,
+    source_type VARCHAR(50) NULL,
+    source_id INT UNSIGNED NULL,
+    lender_name VARCHAR(100) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (farm_id) REFERENCES farms(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
