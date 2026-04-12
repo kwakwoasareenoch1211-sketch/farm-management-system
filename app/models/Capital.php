@@ -110,8 +110,20 @@ class Capital extends Model
                     COALESCE(SUM(CASE WHEN capital_type='grant'             THEN amount ELSE 0 END), 0) AS grant
                 FROM capital_entries
             ")->fetch(\PDO::FETCH_ASSOC);
-            return $row ? array_merge($d, array_map('floatval', array_filter($row, 'is_numeric'))) + $row : $d;
-        } catch (\Throwable $e) { return $d; }
+            if (!$row) return $d;
+            return [
+                'total_records'     => (int)$row['total_records'],
+                'total_capital'     => (float)$row['total_capital'],
+                'owner_equity'      => (float)$row['owner_equity'],
+                'retained_earnings' => (float)$row['retained_earnings'],
+                'loan_capital'      => (float)$row['loan_capital'],
+                'reinvestment'      => (float)$row['reinvestment'],
+                'grant'             => (float)$row['grant'],
+            ];
+        } catch (\Throwable $e) {
+            error_log('Capital::totals error: ' . $e->getMessage());
+            return $d;
+        }
     }
 
     /** Per-contributor breakdown */
