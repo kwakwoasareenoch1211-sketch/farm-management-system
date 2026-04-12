@@ -1,9 +1,11 @@
 <?php
 
 require_once BASE_PATH . 'app/core/Model.php';
+require_once BASE_PATH . 'app/core/OwnerHelper.php';
 
 class MedicationRecord extends Model
 {
+    use OwnerHelper;
     public function all(): array
     {
         $stmt = $this->db->query("
@@ -28,21 +30,23 @@ class MedicationRecord extends Model
         try {
             $stmt = $this->db->prepare("
                 INSERT INTO medication_records (
-                    farm_id, owner_id, batch_id, inventory_item_id, record_date,
+                    farm_id, owner_id, is_shared, batch_id, inventory_item_id, record_date,
                     medication_name, condition_treated, dosage,
                     quantity_used, unit, unit_cost,
                     administered_by, withdrawal_period_days, notes, created_by
                 ) VALUES (
-                    :farm_id, :owner_id, :batch_id, NULL, :record_date,
+                    :farm_id, :owner_id, :is_shared, :batch_id, NULL, :record_date,
                     :medication_name, :condition_treated, :dosage,
                     :quantity_used, :unit, :unit_cost,
                     :administered_by, :withdrawal_period_days, :notes, :created_by
                 )
             ");
 
+            $owner = $this->resolveOwner($data);
             return $stmt->execute([
                 ':farm_id'               => (int)($data['farm_id'] ?? 0),
-                ':owner_id'              => !empty($data['owner_id']) ? (int)$data['owner_id'] : null,
+                ':owner_id'              => $owner['owner_id'],
+                ':is_shared'             => $owner['is_shared'],
                 ':batch_id'              => (int)($data['batch_id'] ?? 0),
                 ':record_date'           => $data['record_date'],
                 ':medication_name'       => trim($data['medication_name'] ?? ''),

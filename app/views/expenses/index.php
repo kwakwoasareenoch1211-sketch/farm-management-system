@@ -70,15 +70,15 @@ $ownerColors = ['#3b82f6','#f59e0b','#10b981','#ef4444','#8b5cf6'];
 
                 <div class="row g-3 mb-3">
                     <div class="col-4 text-center">
-                        <div class="small text-muted mb-1">Total Expenses</div>
-                        <div class="fw-bold text-dark">GHS <?= number_format($owner['total'], 2) ?></div>
+                        <div class="small text-muted mb-1">Own Expenses</div>
+                        <div class="fw-bold text-dark">GHS <?= number_format($owner['own_total'] ?? $owner['total'], 2) ?></div>
                     </div>
                     <div class="col-4 text-center" style="border-left:1px solid #e2e8f0;border-right:1px solid #e2e8f0;">
-                        <div class="small text-muted mb-1">Paid</div>
-                        <div class="fw-bold text-success">GHS <?= number_format($owner['paid'], 2) ?></div>
+                        <div class="small text-muted mb-1">Shared (½)</div>
+                        <div class="fw-bold text-purple" style="color:#7c3aed;">GHS <?= number_format($owner['shared_total'] ?? 0, 2) ?></div>
                     </div>
                     <div class="col-4 text-center">
-                        <div class="small text-muted mb-1">Balance</div>
+                        <div class="small text-muted mb-1">Balance Due</div>
                         <div class="fw-bold <?= $owner['balance'] > 0 ? 'text-danger' : 'text-success' ?>">
                             GHS <?= number_format($owner['balance'], 2) ?>
                         </div>
@@ -304,6 +304,10 @@ function collect_owner_name($owners, $id) {
                         <?php if ($ownerName !== '—'): ?>
                             <span class="badge rounded-pill px-2" style="background:<?= $ownerColor ?>20;color:<?= $ownerColor ?>;">
                                 <?= htmlspecialchars($ownerName) ?>
+                            </span>
+                        <?php elseif (!empty($r['is_shared'])): ?>
+                            <span class="badge rounded-pill px-2" style="background:#7c3aed20;color:#7c3aed;">
+                                <i class="bi bi-people-fill me-1"></i>Shared
                             </span>
                         <?php else: ?>
                             <span class="text-muted small">—</span>

@@ -1,9 +1,11 @@
 <?php
 
 require_once BASE_PATH . 'app/core/Model.php';
+require_once BASE_PATH . 'app/core/OwnerHelper.php';
 
 class MortalityRecord extends Model
 {
+   use OwnerHelper;
    public function all(): array
 {
     $stmt = $this->db->query("
@@ -61,17 +63,19 @@ class MortalityRecord extends Model
             // Insert mortality record
             $stmt = $this->db->prepare("
                 INSERT INTO mortality_records (
-                    farm_id, owner_id, batch_id, record_date,
+                    farm_id, owner_id, is_shared, batch_id, record_date,
                     quantity, cause, disposal_method, notes
                 ) VALUES (
-                    :farm_id, :owner_id, :batch_id, :record_date,
+                    :farm_id, :owner_id, :is_shared, :batch_id, :record_date,
                     :quantity, :cause, :disposal_method, :notes
                 )
             ");
 
+            $owner = $this->resolveOwner($data);
             $ok = $stmt->execute([
                 ':farm_id'         => (int)($data['farm_id'] ?? 0),
-                ':owner_id'        => !empty($data['owner_id']) ? (int)$data['owner_id'] : null,
+                ':owner_id'        => $owner['owner_id'],
+                ':is_shared'       => $owner['is_shared'],
                 ':batch_id'        => $batchId,
                 ':record_date'     => $data['record_date'] ?? date('Y-m-d'),
                 ':quantity'        => $quantity,

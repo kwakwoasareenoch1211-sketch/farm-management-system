@@ -87,23 +87,33 @@ class PoultryDashboard extends Model
         $this->db = Database::connect();
         $owners = $this->db->query("SELECT id, full_name, username FROM users WHERE role IN ('owner','admin') AND is_active=1 ORDER BY id")->fetchAll(PDO::FETCH_ASSOC);
         $colors = ['#3b82f6','#f59e0b','#10b981','#ef4444','#8b5cf6'];
+        $numOwners = max(count($owners), 1);
 
         $result = [];
         foreach ($owners as $i => $owner) {
             $oid = (int)$owner['id'];
+            // Shared records split equally between owners
+            $sharedBirds   = (float)$this->scalar("SELECT COALESCE(SUM(current_quantity),0) FROM animal_batches WHERE is_shared=1") / $numOwners;
+            $sharedEggs    = (float)$this->scalar("SELECT COALESCE(SUM(quantity),0) FROM egg_production_records WHERE is_shared=1") / $numOwners;
+            $sharedMort    = (float)$this->scalar("SELECT COALESCE(SUM(quantity),0) FROM mortality_records WHERE is_shared=1") / $numOwners;
+            $sharedFeedKg  = (float)$this->scalar("SELECT COALESCE(SUM(quantity_kg),0) FROM feed_records WHERE is_shared=1") / $numOwners;
+            $sharedFeedCost= (float)$this->scalar("SELECT COALESCE(SUM(quantity_kg*unit_cost),0) FROM feed_records WHERE is_shared=1") / $numOwners;
+            $sharedMedCost = (float)$this->scalar("SELECT COALESCE(SUM(quantity_used*unit_cost),0) FROM medication_records WHERE is_shared=1") / $numOwners;
+            $sharedVacCost = (float)$this->scalar("SELECT COALESCE(SUM(cost_amount),0) FROM vaccination_records WHERE is_shared=1") / $numOwners;
+
             $result[] = [
-                'id'       => $oid,
-                'name'     => $owner['full_name'],
-                'username' => $owner['username'],
-                'color'    => $colors[$i % count($colors)],
-                'batches'  => (int)$this->scalar("SELECT COUNT(*) FROM animal_batches WHERE owner_id=$oid"),
-                'birds'    => (float)$this->scalar("SELECT COALESCE(SUM(current_quantity),0) FROM animal_batches WHERE owner_id=$oid"),
-                'eggs'     => (float)$this->scalar("SELECT COALESCE(SUM(quantity),0) FROM egg_production_records WHERE owner_id=$oid"),
-                'mortality'=> (float)$this->scalar("SELECT COALESCE(SUM(quantity),0) FROM mortality_records WHERE owner_id=$oid"),
-                'feed_kg'  => (float)$this->scalar("SELECT COALESCE(SUM(quantity_kg),0) FROM feed_records WHERE owner_id=$oid"),
-                'feed_cost'=> (float)$this->scalar("SELECT COALESCE(SUM(quantity_kg*unit_cost),0) FROM feed_records WHERE owner_id=$oid"),
-                'med_cost' => (float)$this->scalar("SELECT COALESCE(SUM(quantity_used*unit_cost),0) FROM medication_records WHERE owner_id=$oid"),
-                'vac_cost' => (float)$this->scalar("SELECT COALESCE(SUM(cost_amount),0) FROM vaccination_records WHERE owner_id=$oid"),
+                'id'        => $oid,
+                'name'      => $owner['full_name'],
+                'username'  => $owner['username'],
+                'color'     => $colors[$i % count($colors)],
+                'batches'   => (int)$this->scalar("SELECT COUNT(*) FROM animal_batches WHERE owner_id=$oid") + (int)($this->scalar("SELECT COUNT(*) FROM animal_batches WHERE is_shared=1") / $numOwners),
+                'birds'     => (float)$this->scalar("SELECT COALESCE(SUM(current_quantity),0) FROM animal_batches WHERE owner_id=$oid") + $sharedBirds,
+                'eggs'      => (float)$this->scalar("SELECT COALESCE(SUM(quantity),0) FROM egg_production_records WHERE owner_id=$oid") + $sharedEggs,
+                'mortality' => (float)$this->scalar("SELECT COALESCE(SUM(quantity),0) FROM mortality_records WHERE owner_id=$oid") + $sharedMort,
+                'feed_kg'   => (float)$this->scalar("SELECT COALESCE(SUM(quantity_kg),0) FROM feed_records WHERE owner_id=$oid") + $sharedFeedKg,
+                'feed_cost' => (float)$this->scalar("SELECT COALESCE(SUM(quantity_kg*unit_cost),0) FROM feed_records WHERE owner_id=$oid") + $sharedFeedCost,
+                'med_cost'  => (float)$this->scalar("SELECT COALESCE(SUM(quantity_used*unit_cost),0) FROM medication_records WHERE owner_id=$oid") + $sharedMedCost,
+                'vac_cost'  => (float)$this->scalar("SELECT COALESCE(SUM(cost_amount),0) FROM vaccination_records WHERE owner_id=$oid") + $sharedVacCost,
             ];
         }
         return $result;

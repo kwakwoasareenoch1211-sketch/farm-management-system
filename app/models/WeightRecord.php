@@ -1,9 +1,11 @@
 <?php
 
 require_once BASE_PATH . 'app/core/Model.php';
+require_once BASE_PATH . 'app/core/OwnerHelper.php';
 
 class WeightRecord extends Model
 {
+    use OwnerHelper;
     public function all(): array
     {
         $stmt = $this->db->query("
@@ -29,13 +31,15 @@ class WeightRecord extends Model
         $totalWeightKg  = (float)($data['total_weight_kg'] ?? 0);
         $avgWeightKg    = $sampleSize > 0 ? $totalWeightKg / $sampleSize : (float)($data['average_weight_kg'] ?? 0);
 
+        $owner = $this->resolveOwner($data);
         $stmt = $this->db->prepare("
-            INSERT INTO weight_records (farm_id, owner_id, batch_id, record_date, sample_size, total_weight_kg, average_weight_kg, notes, created_by)
-            VALUES (:farm_id, :owner_id, :batch_id, :record_date, :sample_size, :total_weight_kg, :average_weight_kg, :notes, :created_by)
+            INSERT INTO weight_records (farm_id, owner_id, is_shared, batch_id, record_date, sample_size, total_weight_kg, average_weight_kg, notes, created_by)
+            VALUES (:farm_id, :owner_id, :is_shared, :batch_id, :record_date, :sample_size, :total_weight_kg, :average_weight_kg, :notes, :created_by)
         ");
         return $stmt->execute([
             ':farm_id'          => (int)($data['farm_id']  ?? 0),
-            ':owner_id'         => !empty($data['owner_id']) ? (int)$data['owner_id'] : null,
+            ':owner_id'         => $owner['owner_id'],
+            ':is_shared'        => $owner['is_shared'],
             ':batch_id'         => (int)($data['batch_id'] ?? 0),
             ':record_date'      => $data['record_date'],
             ':sample_size'      => $sampleSize,

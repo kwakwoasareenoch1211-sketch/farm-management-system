@@ -1,9 +1,11 @@
 <?php
 
 require_once BASE_PATH . 'app/core/Model.php';
+require_once BASE_PATH . 'app/core/OwnerHelper.php';
 
 class Feed extends Model
 {
+    use OwnerHelper;
     public function all(): array
     {
         $stmt = $this->db->query("
@@ -35,17 +37,19 @@ class Feed extends Model
         try {
             $stmt = $this->db->prepare("
                 INSERT INTO feed_records (
-                    farm_id, owner_id, batch_id, inventory_item_id,
+                    farm_id, owner_id, is_shared, batch_id, inventory_item_id,
                     record_date, feed_name, quantity_kg, unit_cost, notes
                 ) VALUES (
-                    :farm_id, :owner_id, :batch_id, :inventory_item_id,
+                    :farm_id, :owner_id, :is_shared, :batch_id, :inventory_item_id,
                     :record_date, :feed_name, :quantity_kg, :unit_cost, :notes
                 )
             ");
 
+            $owner = $this->resolveOwner($data);
             return $stmt->execute([
                 ':farm_id'            => (int)($data['farm_id'] ?? 1),
-                ':owner_id'           => !empty($data['owner_id']) ? (int)$data['owner_id'] : null,
+                ':owner_id'           => $owner['owner_id'],
+                ':is_shared'          => $owner['is_shared'],
                 ':batch_id'           => (int)($data['batch_id'] ?? 0),
                 ':inventory_item_id'  => null,
                 ':record_date'        => $data['record_date'],

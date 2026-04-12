@@ -1,9 +1,11 @@
 <?php
 
 require_once BASE_PATH . 'app/core/Model.php';
+require_once BASE_PATH . 'app/core/OwnerHelper.php';
 
 class Expense extends Model
 {
+    use OwnerHelper;
     public function all(): array
     {
         // Get all expenses including auto-generated ones from feed, medication, vaccination, and stock receipts
@@ -122,35 +124,23 @@ class Expense extends Model
 
             $stmt = $this->db->prepare("
                 INSERT INTO expenses (
-                    farm_id,
-                    owner_id,
-                    category_id,
-                    expense_date,
-                    description,
-                    amount,
-                    payment_method,
-                    payment_status,
-                    amount_paid,
-                    expense_reference,
-                    notes
+                    farm_id, owner_id, is_shared,
+                    category_id, expense_date, description, amount,
+                    payment_method, payment_status, amount_paid,
+                    expense_reference, notes
                 ) VALUES (
-                    :farm_id,
-                    :owner_id,
-                    :category_id,
-                    :expense_date,
-                    :description,
-                    :amount,
-                    :payment_method,
-                    :payment_status,
-                    :amount_paid,
-                    :expense_reference,
-                    :notes
+                    :farm_id, :owner_id, :is_shared,
+                    :category_id, :expense_date, :description, :amount,
+                    :payment_method, :payment_status, :amount_paid,
+                    :expense_reference, :notes
                 )
             ");
 
+            $owner = $this->resolveOwner($data);
             $ok = $stmt->execute([
                 ':farm_id' => (int)($data['farm_id'] ?? 0),
-                ':owner_id' => !empty($data['owner_id']) ? (int)$data['owner_id'] : null,
+                ':owner_id' => $owner['owner_id'],
+                ':is_shared' => $owner['is_shared'],
                 ':category_id' => (!empty($data['category_id']) && (int)$data['category_id'] > 0) ? (int)$data['category_id'] : null,
                 ':expense_date' => $data['expense_date'],
                 ':description' => $data['description'] ?? null,
@@ -630,59 +620,58 @@ class Expense extends Model
     public function byOwner(): array
     {
         $this->db = Database::connect();
-        // Get all owners
-        $owners = $this->db->query("SELECT id, full_name, username FROM users WHERE role IN ('owner','admin') ORDER BY id")->fetchAll(PDO::FETCH_ASSOC);
+        $stmt = $this->db->prepare("SELECT id, full_name, username FROM users WHERE role IN ('owner','admin') ORDER BY id");
+        $stmt->execute();
+        $owners = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $numOwners = max(count($owners), 1);
+
+        // Shared totals (split equally)
+        $sharedTotal = (float)$this->db->query("SELECT COALESCE(SUM(amount),0) FROM expenses WHERE is_shared=1")->fetchColumn() / $numOwners;
+        $sharedPaid  = (float)$this->db->query("SELECT COALESCE(SUM(amount_paid),0) FROM expenses WHERE is_shared=1")->fetchColumn() / $numOwners;
+        $sharedMonth = (float)$this->db->query("SELECT COALESCE(SUM(amount),0) FROM expenses WHERE is_shared=1 AND MONTH(expense_date)=MONTH(CURDATE()) AND YEAR(expense_date)=YEAR(CURDATE())")->fetchColumn() / $numOwners;
 
         $result = [];
         foreach ($owners as $owner) {
             $oid = (int)$owner['id'];
 
-            // Total expenses for this owner
-            $total = (float)$this->db->query("
-                SELECT COALESCE(SUM(amount), 0) FROM expenses WHERE owner_id = $oid
-            ")->fetchColumn();
+            $s = $this->db->prepare("SELECT COALESCE(SUM(amount),0) FROM expenses WHERE owner_id=? AND is_shared=0");
+            $s->execute([$oid]); $ownTotal = (float)$s->fetchColumn();
 
-            // This month
-            $month = (float)$this->db->query("
-                SELECT COALESCE(SUM(amount), 0) FROM expenses
-                WHERE owner_id = $oid AND MONTH(expense_date) = MONTH(CURDATE()) AND YEAR(expense_date) = YEAR(CURDATE())
-            ")->fetchColumn();
+            $s = $this->db->prepare("SELECT COALESCE(SUM(amount),0) FROM expenses WHERE owner_id=? AND is_shared=0 AND MONTH(expense_date)=MONTH(CURDATE()) AND YEAR(expense_date)=YEAR(CURDATE())");
+            $s->execute([$oid]); $ownMonth = (float)$s->fetchColumn();
 
-            // Total paid
-            $paid = (float)$this->db->query("
-                SELECT COALESCE(SUM(amount_paid), 0) FROM expenses WHERE owner_id = $oid
-            ")->fetchColumn();
+            $s = $this->db->prepare("SELECT COALESCE(SUM(amount_paid),0) FROM expenses WHERE owner_id=? AND is_shared=0");
+            $s->execute([$oid]); $ownPaid = (float)$s->fetchColumn();
 
-            // Total sales revenue for this owner
-            $revenue = (float)$this->db->query("
-                SELECT COALESCE(SUM(total_amount), 0) FROM sales WHERE farm_id IN (
-                    SELECT id FROM farms LIMIT 1
-                )
-            ")->fetchColumn();
+            $s = $this->db->prepare("SELECT COALESCE(SUM(total_amount),0) FROM sales WHERE owner_id=?");
+            $s->execute([$oid]); $revenue = (float)$s->fetchColumn();
 
-            // By category
-            $cats = $this->db->query("
-                SELECT COALESCE(ec.category_name, 'Uncategorized') AS cat, SUM(e.amount) AS total
-                FROM expenses e
-                LEFT JOIN expense_categories ec ON ec.id = e.category_id
-                WHERE e.owner_id = $oid
+            $s = $this->db->prepare("
+                SELECT COALESCE(ec.category_name,'Uncategorized') AS cat, SUM(e.amount) AS total
+                FROM expenses e LEFT JOIN expense_categories ec ON ec.id=e.category_id
+                WHERE e.owner_id=? OR e.is_shared=1
                 GROUP BY cat ORDER BY total DESC
-            ")->fetchAll(PDO::FETCH_ASSOC);
+            ");
+            $s->execute([$oid]); $cats = $s->fetchAll(PDO::FETCH_ASSOC);
+
+            $total = $ownTotal + $sharedTotal;
+            $paid  = $ownPaid  + $sharedPaid;
 
             $result[] = [
-                'id'         => $oid,
-                'name'       => $owner['full_name'],
-                'username'   => $owner['username'],
-                'total'      => $total,
-                'this_month' => $month,
-                'paid'       => $paid,
-                'balance'    => $total - $paid,
-                'revenue'    => $revenue / max(count($owners), 1), // split revenue equally
-                'margin'     => $revenue > 0 ? (($revenue / max(count($owners), 1)) - $total) : -$total,
-                'categories' => $cats,
+                'id'           => $oid,
+                'name'         => $owner['full_name'],
+                'username'     => $owner['username'],
+                'total'        => $total,
+                'own_total'    => $ownTotal,
+                'shared_total' => $sharedTotal,
+                'this_month'   => $ownMonth + $sharedMonth,
+                'paid'         => $paid,
+                'balance'      => $total - $paid,
+                'revenue'      => $revenue,
+                'margin'       => $revenue - $total,
+                'categories'   => $cats,
             ];
         }
-
         return $result;
     }
 

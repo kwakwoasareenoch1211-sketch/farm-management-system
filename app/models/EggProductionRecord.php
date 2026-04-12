@@ -1,9 +1,11 @@
 <?php
 
 require_once BASE_PATH . 'app/core/Model.php';
+require_once BASE_PATH . 'app/core/OwnerHelper.php';
 
 class EggProductionRecord extends Model
 {
+    use OwnerHelper;
     public function all(): array
     {
         $stmt = $this->db->query("
@@ -25,13 +27,15 @@ class EggProductionRecord extends Model
 
     public function create(array $data): bool
     {
+        $owner = $this->resolveOwner($data);
         $stmt = $this->db->prepare("
-            INSERT INTO egg_production_records (farm_id, owner_id, batch_id, record_date, quantity, notes, created_by)
-            VALUES (:farm_id, :owner_id, :batch_id, :record_date, :quantity, :notes, :created_by)
+            INSERT INTO egg_production_records (farm_id, owner_id, is_shared, batch_id, record_date, quantity, notes, created_by)
+            VALUES (:farm_id, :owner_id, :is_shared, :batch_id, :record_date, :quantity, :notes, :created_by)
         ");
         return $stmt->execute([
             ':farm_id'    => (int)($data['farm_id']    ?? 0),
-            ':owner_id'   => !empty($data['owner_id']) ? (int)$data['owner_id'] : null,
+            ':owner_id'   => $owner['owner_id'],
+            ':is_shared'  => $owner['is_shared'],
             ':batch_id'   => (int)($data['batch_id']   ?? 0),
             ':record_date'=> $data['record_date'],
             ':quantity'   => (float)($data['quantity'] ?? 0),
