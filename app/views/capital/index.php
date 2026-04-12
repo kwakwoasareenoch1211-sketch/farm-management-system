@@ -5,6 +5,9 @@ $byContributor = $byContributor ?? [];
 $byType        = $byType        ?? [];
 $base          = rtrim(BASE_URL, '/');
 
+// Use totals directly - never cache in a variable that might be stale
+$totalCapital = (float)($totals['total_capital'] ?? 0);
+
 $typeLabels = [
     'owner_equity'      => ['label' => 'Owner Equity',       'color' => '#3b82f6', 'icon' => 'bi-person-fill'],
     'reinvestment'      => ['label' => 'Reinvestment',        'color' => '#10b981', 'icon' => 'bi-arrow-repeat'],
@@ -83,15 +86,19 @@ $totalCapital = (float)($totals['total_capital'] ?? 0);
     <div class="row g-4">
         <?php foreach ($byContributor as $i => $c):
             $color = $ownerColors[$i % count($ownerColors)];
-            $freshTotal = (float)($totals['total_capital'] ?? 0);
-            $pct   = $freshTotal > 0 ? ((float)$c['total_contributed'] / $freshTotal) * 100 : 0;
+            $totalCapital = (float)($totals['total_capital'] ?? 0);
+            $pct   = $totalCapital > 0 ? ((float)$c['total_contributed'] / $totalCapital) * 100 : 0;
         ?>
         <div class="col-md-6">
             <div class="contributor-card" style="border-color:<?= $color ?>30;">
                 <div class="d-flex align-items-center gap-3 mb-3">
                     <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
                          style="width:44px;height:44px;background:<?= $color ?>;font-size:18px;flex-shrink:0;">
-                        <?= strtoupper(substr($c['contributor_name'], 0, 1)) ?>
+                        <?php if ($c['owner_id'] === null): ?>
+                            <i class="bi bi-building" style="font-size:18px;"></i>
+                        <?php else: ?>
+                            <?= strtoupper(substr($c['contributor_name'], 0, 1)) ?>
+                        <?php endif; ?>
                     </div>
                     <div>
                         <div class="fw-bold"><?= htmlspecialchars($c['contributor_name']) ?></div>
@@ -210,8 +217,8 @@ $totalCapital = (float)($totals['total_capital'] ?? 0);
                 <?php foreach ($byType as $t):
                     $ct  = $t['capital_type'] ?? 'other';
                     $cfg = $typeLabels[$ct] ?? $typeLabels['other'];
-                    $freshTotal2 = (float)($totals['total_capital'] ?? 0);
-                    $pct = $freshTotal2 > 0 ? ((float)$t['total'] / $freshTotal2) * 100 : 100;
+                    $totalCapital = (float)($totals['total_capital'] ?? 0);
+                    $pct = $totalCapital > 0 ? ((float)$t['total'] / $totalCapital) * 100 : 100;
                 ?>
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center mb-1">
@@ -237,3 +244,4 @@ $totalCapital = (float)($totals['total_capital'] ?? 0);
         </div>
     </div>
 </div>
+
