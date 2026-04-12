@@ -20,15 +20,25 @@ class BatchController extends Controller
     {
         require_once BASE_PATH . 'app/models/Farm.php';
         require_once BASE_PATH . 'app/models/AnimalType.php';
+        require_once BASE_PATH . 'app/models/User.php';
 
         $farmModel       = new Farm();
         $animalTypeModel = new AnimalType();
+        $db = \Database::connect();
+
+        // Get housing units
+        $housingUnits = [];
+        try {
+            $housingUnits = $db->query("SELECT id, unit_name, capacity FROM housing_units WHERE status='active' ORDER BY unit_name")->fetchAll() ?: [];
+        } catch (\Throwable $e) {}
 
         $this->view('batches/create', [
-            'pageTitle'   => 'Create Batch',
-            'sidebarType' => 'poultry',
-            'farms'       => $farmModel->all(),
-            'animalTypes' => $animalTypeModel->all(),
+            'pageTitle'    => 'Create Batch',
+            'sidebarType'  => 'poultry',
+            'farms'        => $farmModel->all(),
+            'animalTypes'  => $animalTypeModel->all(),
+            'housingUnits' => $housingUnits,
+            'owners'       => (new User())->allOwners(),
         ], 'admin');
     }
 
@@ -41,6 +51,7 @@ class BatchController extends Controller
             'animal_type_id' => $_POST['animal_type_id'] ?? null,
             'housing_unit_id' => $_POST['housing_unit_id'] ?? null,
             'farm_id' => $_POST['farm_id'] ?? null,
+            'owner_id' => !empty($_POST['owner_id']) ? (int)$_POST['owner_id'] : null,
             'production_purpose' => $_POST['production_purpose'] ?? 'mixed',
             'bird_subtype' => $_POST['bird_subtype'] ?? null,
             'breed' => $_POST['breed'] ?? null,

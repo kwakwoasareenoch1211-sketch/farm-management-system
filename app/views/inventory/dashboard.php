@@ -35,6 +35,15 @@ $items           = $items ?? [];
         <a href="<?= $base ?>/inventory/issues/create" class="btn btn-outline-warning btn-sm">
             <i class="bi bi-box-arrow-up me-1"></i> Issue Stock
         </a>
+        <a href="<?= $base ?>/feed/create" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-basket2 me-1"></i> Record Feed
+        </a>
+        <a href="<?= $base ?>/medication/create" class="btn btn-outline-danger btn-sm">
+            <i class="bi bi-capsule me-1"></i> Record Medication
+        </a>
+        <a href="<?= $base ?>/vaccination/create" class="btn btn-outline-info btn-sm">
+            <i class="bi bi-shield-check me-1"></i> Record Vaccination
+        </a>
     </div>
 </div>
 
@@ -257,3 +266,34 @@ $items           = $items ?? [];
     </div>
 </div>
 <?php endif; ?>
+
+<!-- Quick Create Links -->
+<div class="inv-card p-4 mt-4">
+    <h6 class="fw-bold mb-3"><i class="bi bi-grid-3x3-gap-fill text-primary me-2"></i>Quick Create Records</h6>
+    <div class="row g-3">
+        <?php
+        $quickLinks = [
+            ['url'=>'/feed/create',         'icon'=>'bi-basket2',       'color'=>'#f59e0b', 'label'=>'Feed Record',       'desc'=>'Record feed usage for a batch'],
+            ['url'=>'/medication/create',    'icon'=>'bi-capsule',       'color'=>'#ef4444', 'label'=>'Medication',        'desc'=>'Record medication given'],
+            ['url'=>'/vaccination/create',   'icon'=>'bi-shield-check',  'color'=>'#22c55e', 'label'=>'Vaccination',       'desc'=>'Record vaccination done'],
+            ['url'=>'/mortality/create',     'icon'=>'bi-heart-pulse',   'color'=>'#d63384', 'label'=>'Mortality',         'desc'=>'Record bird deaths'],
+            ['url'=>'/egg-production/create','icon'=>'bi-egg-fried',     'color'=>'#f97316', 'label'=>'Egg Production',    'desc'=>'Record daily egg count'],
+            ['url'=>'/weights/create',       'icon'=>'bi-speedometer2',  'color'=>'#8b5cf6', 'label'=>'Weight Record',     'desc'=>'Record bird weights'],
+            ['url'=>'/inventory/receipts/create','icon'=>'bi-box-arrow-in-down','color'=>'#3b82f6','label'=>'Receive Stock','desc'=>'Add stock to inventory'],
+            ['url'=>'/inventory/issues/create',  'icon'=>'bi-box-arrow-up',    'color'=>'#64748b','label'=>'Issue Stock',  'desc'=>'Remove stock from inventory'],
+        ];
+        foreach ($quickLinks as $ql):
+        ?>
+        <div class="col-6 col-md-3">
+            <a href="<?= $base . $ql['url'] ?>" class="d-block text-decoration-none p-3 rounded-3 text-center"
+               style="border:2px solid #e2e8f0;background:#fff;transition:all .2s;"
+               onmouseover="this.style.borderColor='<?= $ql['color'] ?>';this.style.background='<?= $ql['color'] ?>10'"
+               onmouseout="this.style.borderColor='#e2e8f0';this.style.background='#fff'">
+                <i class="bi <?= $ql['icon'] ?>" style="font-size:2rem;color:<?= $ql['color'] ?>;display:block;margin-bottom:8px;"></i>
+                <div class="fw-semibold small text-dark"><?= $ql['label'] ?></div>
+                <div class="text-muted" style="font-size:11px;"><?= $ql['desc'] ?></div>
+            </a>
+        </div>
+        <?php endforeach; ?>
+    </div>
+</div>
