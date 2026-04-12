@@ -5,7 +5,35 @@ $byContributor = $byContributor ?? [];
 $byType        = $byType        ?? [];
 $base          = rtrim(BASE_URL, '/');
 
-// Use totals directly - never cache in a variable that might be stale
+// DIRECT DB QUERY as fallback - bypasses any model caching issues
+if (empty($totals['total_capital']) || (float)($totals['total_capital']) == 0) {
+    try {
+        $db = Database::connect();
+        $row = $db->query("
+            SELECT
+                COUNT(*) AS total_records,
+                COALESCE(SUM(amount), 0) AS total_capital,
+                COALESCE(SUM(CASE WHEN capital_type='owner_equity'      THEN amount ELSE 0 END), 0) AS owner_equity,
+                COALESCE(SUM(CASE WHEN capital_type='retained_earnings' THEN amount ELSE 0 END), 0) AS retained_earnings,
+                COALESCE(SUM(CASE WHEN capital_type='loan_capital'      THEN amount ELSE 0 END), 0) AS loan_capital,
+                COALESCE(SUM(CASE WHEN capital_type='reinvestment'      THEN amount ELSE 0 END), 0) AS reinvestment,
+                COALESCE(SUM(CASE WHEN capital_type='grant'             THEN amount ELSE 0 END), 0) AS grant
+            FROM capital_entries
+        ")->fetch(PDO::FETCH_ASSOC);
+        if ($row) {
+            $totals = [
+                'total_records'     => (int)$row['total_records'],
+                'total_capital'     => (float)$row['total_capital'],
+                'owner_equity'      => (float)$row['owner_equity'],
+                'retained_earnings' => (float)$row['retained_earnings'],
+                'loan_capital'      => (float)$row['loan_capital'],
+                'reinvestment'      => (float)$row['reinvestment'],
+                'grant'             => (float)$row['grant'],
+            ];
+        }
+    } catch (Throwable $e) {}
+}
+
 $totalCapital = (float)($totals['total_capital'] ?? 0);
 
 $typeLabels = [
