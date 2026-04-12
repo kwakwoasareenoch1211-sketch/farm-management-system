@@ -96,7 +96,7 @@ class Capital extends Model
 
     public function totals(): array
     {
-        $d = ['total_records'=>0,'total_capital'=>0,'owner_equity'=>0,'retained_earnings'=>0,'loan_capital'=>0,'reinvestment'=>0,'grant'=>0];
+        $d = ['total_records'=>0,'total_capital'=>0,'owner_equity'=>0,'retained_earnings'=>0,'loan_capital'=>0,'reinvestment'=>0,'grant_amount'=>0];
         try {
             $this->db = Database::connect();
             $row = $this->db->query("
@@ -107,7 +107,7 @@ class Capital extends Model
                     COALESCE(SUM(CASE WHEN capital_type='retained_earnings' THEN amount ELSE 0 END), 0) AS retained_earnings,
                     COALESCE(SUM(CASE WHEN capital_type='loan_capital'      THEN amount ELSE 0 END), 0) AS loan_capital,
                     COALESCE(SUM(CASE WHEN capital_type='reinvestment'      THEN amount ELSE 0 END), 0) AS reinvestment,
-                    COALESCE(SUM(CASE WHEN capital_type='grant'             THEN amount ELSE 0 END), 0) AS grant
+                    COALESCE(SUM(CASE WHEN capital_type='grant'             THEN amount ELSE 0 END), 0) AS grant_amount
                 FROM capital_entries
             ")->fetch(PDO::FETCH_ASSOC);
             if (!$row) return $d;
@@ -118,7 +118,7 @@ class Capital extends Model
                 'retained_earnings' => (float)$row['retained_earnings'],
                 'loan_capital'      => (float)$row['loan_capital'],
                 'reinvestment'      => (float)$row['reinvestment'],
-                'grant'             => (float)$row['grant'],
+                'grant_amount'      => (float)$row['grant_amount'],
             ];
         } catch (Throwable $e) {
             error_log('Capital::totals error: ' . $e->getMessage());

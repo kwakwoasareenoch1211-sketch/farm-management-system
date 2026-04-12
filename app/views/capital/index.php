@@ -17,7 +17,7 @@ if (empty($totals['total_capital']) || (float)($totals['total_capital']) == 0) {
                 COALESCE(SUM(CASE WHEN capital_type='retained_earnings' THEN amount ELSE 0 END), 0) AS retained_earnings,
                 COALESCE(SUM(CASE WHEN capital_type='loan_capital'      THEN amount ELSE 0 END), 0) AS loan_capital,
                 COALESCE(SUM(CASE WHEN capital_type='reinvestment'      THEN amount ELSE 0 END), 0) AS reinvestment,
-                COALESCE(SUM(CASE WHEN capital_type='grant'             THEN amount ELSE 0 END), 0) AS grant
+                COALESCE(SUM(CASE WHEN capital_type='grant'             THEN amount ELSE 0 END), 0) AS grant_amount
             FROM capital_entries
         ")->fetch(PDO::FETCH_ASSOC);
         if ($row) {
@@ -28,7 +28,7 @@ if (empty($totals['total_capital']) || (float)($totals['total_capital']) == 0) {
                 'retained_earnings' => (float)$row['retained_earnings'],
                 'loan_capital'      => (float)$row['loan_capital'],
                 'reinvestment'      => (float)$row['reinvestment'],
-                'grant'             => (float)$row['grant'],
+                'grant_amount'      => (float)$row['grant_amount'],
             ];
         }
     } catch (Throwable $e) {}
