@@ -45,7 +45,7 @@
                     <option value="supplies">Supplies</option>
                     <option value="general">General</option>
                 </select>
-            </div>i dont have the 
+            </div>
 
             <div class="col-md-3">
                 <label class="form-label">Unit of Measure</label>
