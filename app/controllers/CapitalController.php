@@ -3,35 +3,40 @@
 require_once BASE_PATH . 'app/core/Controller.php';
 require_once BASE_PATH . 'app/models/Capital.php';
 require_once BASE_PATH . 'app/models/Farm.php';
+require_once BASE_PATH . 'app/models/User.php';
 
 class CapitalController extends Controller
 {
     private Capital $capitalModel;
-    private Farm $farmModel;
+    private Farm    $farmModel;
+    private User    $userModel;
 
     public function __construct()
     {
         $this->capitalModel = new Capital();
         $this->farmModel    = new Farm();
+        $this->userModel    = new User();
     }
 
     public function index(): void
     {
         $this->view('capital/index', [
-            'pageTitle'  => 'Capital Management',
-            'sidebarType'=> 'financial',
-            'records'    => $this->capitalModel->all(),
-            'totals'     => $this->capitalModel->totals(),
-            'byType'     => $this->capitalModel->byType(),
+            'pageTitle'      => 'Capital Management',
+            'sidebarType'    => 'financial',
+            'records'        => $this->capitalModel->all(),
+            'totals'         => $this->capitalModel->totals(),
+            'byType'         => $this->capitalModel->byType(),
+            'byContributor'  => $this->capitalModel->byContributor(),
         ], 'admin');
     }
 
     public function create(): void
     {
         $this->view('capital/create', [
-            'pageTitle'  => 'Add Capital Entry',
-            'sidebarType'=> 'financial',
-            'farms'      => $this->farmModel->all(),
+            'pageTitle'   => 'Add Capital Entry',
+            'sidebarType' => 'financial',
+            'farms'       => $this->farmModel->all(),
+            'owners'      => $this->userModel->allOwners(),
         ], 'admin');
     }
 
@@ -48,14 +53,14 @@ class CapitalController extends Controller
     {
         $id     = (int)($_GET['id'] ?? 0);
         $record = $this->capitalModel->find($id);
-
         if (!$record) die('Capital entry not found');
 
         $this->view('capital/edit', [
-            'pageTitle'  => 'Edit Capital Entry',
-            'sidebarType'=> 'financial',
-            'record'     => $record,
-            'farms'      => $this->farmModel->all(),
+            'pageTitle'   => 'Edit Capital Entry',
+            'sidebarType' => 'financial',
+            'record'      => $record,
+            'farms'       => $this->farmModel->all(),
+            'owners'      => $this->userModel->allOwners(),
         ], 'admin');
     }
 

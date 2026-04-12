@@ -30,17 +30,13 @@ class ExpenseController extends Controller
     public function index(): void
     {
         $records = $this->expenseModel->all();
-        $totals = $this->expenseModel->totals();
-        $ownerBreakdown = $this->expenseModel->byOwner();
-        $owners = $this->userModel->allOwners();
+        $totals  = $this->expenseModel->totals();
 
         $this->view('expenses/index', [
-            'pageTitle' => 'Expenses',
+            'pageTitle'   => 'Business Expenses',
             'sidebarType' => 'financial',
-            'records' => $records,
-            'totals' => $totals,
-            'ownerBreakdown' => $ownerBreakdown,
-            'owners' => $owners,
+            'records'     => $records,
+            'totals'      => $totals,
         ], 'admin');
     }
 

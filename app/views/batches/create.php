@@ -36,9 +36,7 @@ $breedOptions = [
                 <div class="row g-3">
 
                     <!-- OWNER SELECTOR -->
-                    <?php include BASE_PATH . 'app/views/layouts/owner_selector.php'; ?>
-
-                    <!-- FARM -->
+<!-- FARM -->
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Farm <span class="text-danger">*</span></label>
                         <select name="farm_id" class="form-select" required>
@@ -252,3 +250,4 @@ document.getElementById('batchForm').addEventListener('submit', function() {
 // Initialize
 updateBreeds();
 </script>
+
