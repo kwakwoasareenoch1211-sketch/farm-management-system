@@ -7,22 +7,28 @@ class MortalityRecord extends Model
 {
    use OwnerHelper;
    public function all(): array
-{
-    $stmt = $this->db->query("
-        SELECT
-            mr.*,
-            ab.batch_code,
-            ab.batch_name,
-            ab.current_quantity,
-            f.farm_name
-        FROM mortality_records mr
-        LEFT JOIN animal_batches ab ON ab.id = mr.batch_id
-        LEFT JOIN farms f ON f.id = mr.farm_id
-        ORDER BY mr.record_date DESC, mr.id DESC
-    ");
+    {
+        // Calculate birds remaining after each mortality event using a running total
+        $stmt = $this->db->query("
+            SELECT
+                mr.*,
+                ab.batch_code,
+                ab.batch_name,
+                ab.initial_quantity,
+                ab.current_quantity AS live_now,
+                (ab.current_quantity + COALESCE(
+                    (SELECT SUM(m2.quantity) FROM mortality_records m2
+                     WHERE m2.batch_id = mr.batch_id AND m2.id > mr.id), 0
+                )) AS birds_after_this_record,
+                f.farm_name
+            FROM mortality_records mr
+            LEFT JOIN animal_batches ab ON ab.id = mr.batch_id
+            LEFT JOIN farms f ON f.id = mr.farm_id
+            ORDER BY mr.record_date DESC, mr.id DESC
+        ");
 
-    return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
-}
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
 
     public function find(int $id): ?array
     {

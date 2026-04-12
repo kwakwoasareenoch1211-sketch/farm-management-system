@@ -45,17 +45,41 @@ $totalBatches = (float)($totals['total_batches'] ?? 0);
 </div>
 
 <div class="work-card p-4">
-    <h5 class="fw-bold mb-3">Mortality Record List</h5>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">Mortality Record List</h5>
+        <?php
+        // Show current live count per batch
+        $batchSummary = [];
+        foreach ($records as $r) {
+            $bid = $r['batch_id'] ?? 0;
+            if (!isset($batchSummary[$bid])) {
+                $batchSummary[$bid] = [
+                    'name'     => ($r['batch_code'] ?? '') . (!empty($r['batch_name']) ? ' - ' . $r['batch_name'] : ''),
+                    'live_now' => (int)($r['live_now'] ?? 0),
+                ];
+            }
+        }
+        ?>
+        <?php if (!empty($batchSummary)): ?>
+            <div class="d-flex gap-2 flex-wrap">
+                <?php foreach ($batchSummary as $b): ?>
+                    <span class="badge rounded-pill px-3 py-2 text-bg-success">
+                        <?= htmlspecialchars($b['name']) ?>: <?= number_format($b['live_now']) ?> live now
+                    </span>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </div>
     <div class="table-responsive">
         <table class="table align-middle">
             <thead>
                 <tr>
                     <th>Date</th>
                     <th>Batch</th>
-                    <th>Quantity</th>
+                    <th>Died</th>
                     <th>Cause</th>
                     <th>Disposal</th>
-                    <th>Current Birds</th>
+                    <th>Birds After</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -65,10 +89,15 @@ $totalBatches = (float)($totals['total_batches'] ?? 0);
                         <tr>
                             <td><?= htmlspecialchars($r['record_date'] ?? '') ?></td>
                             <td><?= htmlspecialchars(($r['batch_code'] ?? '') . (!empty($r['batch_name']) ? ' - ' . $r['batch_name'] : '')) ?></td>
-                            <td><?= number_format((float)($r['quantity'] ?? 0)) ?></td>
+                            <td><span class="badge text-bg-danger"><?= number_format((float)($r['quantity'] ?? 0)) ?></span></td>
                             <td><?= htmlspecialchars($r['cause'] ?? '-') ?></td>
                             <td><?= htmlspecialchars($r['disposal_method'] ?? '-') ?></td>
-                            <td><?= number_format((float)($r['current_quantity'] ?? 0)) ?></td>
+                            <td>
+                                <span class="fw-semibold <?= (int)($r['birds_after_this_record'] ?? 0) < 10 ? 'text-danger' : 'text-success' ?>">
+                                    <?= number_format((int)($r['birds_after_this_record'] ?? $r['live_now'] ?? 0)) ?>
+                                </span>
+                                <span class="text-muted small ms-1">birds</span>
+                            </td>
                             <td>
                                 <div class="action-btns">
                                     <a class="btn btn-sm btn-outline-primary" href="<?= rtrim(BASE_URL, '/') ?>/mortality/edit?id=<?= (int)($r['id'] ?? 0) ?>">Edit</a>
