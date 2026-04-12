@@ -3,6 +3,7 @@
 require_once BASE_PATH . 'app/core/Controller.php';
 require_once BASE_PATH . 'app/models/MortalityRecord.php';
 require_once BASE_PATH . 'app/models/Batch.php';
+require_once BASE_PATH . 'app/models/User.php';
 
 class MortalityController extends Controller
 {
@@ -36,15 +37,19 @@ class MortalityController extends Controller
             'pageTitle' => 'Add Mortality Record',
             'sidebarType' => 'poultry',
             'batches' => $batches,
+            'owners' => (new User())->allOwners(),
         ], 'admin');
     }
 
     public function store(): void
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->mortalityModel->create($_POST);
+            $ok = $this->mortalityModel->create($_POST);
+            if (!$ok) {
+                header('Location: ' . rtrim(BASE_URL, '/') . '/mortality/create?error=failed');
+                exit;
+            }
         }
-
         header('Location: ' . rtrim(BASE_URL, '/') . '/mortality');
         exit;
     }

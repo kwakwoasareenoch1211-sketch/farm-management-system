@@ -53,6 +53,10 @@ ALTER TABLE animal_batches
 ALTER TABLE feed_records
     ADD COLUMN IF NOT EXISTS feed_name VARCHAR(100) NULL AFTER record_date;
 
+-- MORTALITY_RECORDS - missing disposal_method
+ALTER TABLE mortality_records
+    ADD COLUMN IF NOT EXISTS disposal_method VARCHAR(100) NULL AFTER cause;
+
 -- LOSSES/WRITEOFFS TABLE - create if not exists
 CREATE TABLE IF NOT EXISTS losses_writeoffs (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

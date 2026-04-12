@@ -40,48 +40,48 @@ class MortalityRecord extends Model
 
     public function create(array $data): bool
     {
-        $quantity  = (int)($data['quantity'] ?? 0);
-        $batchId   = (int)($data['batch_id'] ?? 0);
+        $quantity = (int)($data['quantity'] ?? 0);
+        $batchId  = (int)($data['batch_id'] ?? 0);
 
-        if ($quantity <= 0) {
+        if ($quantity <= 0 || $batchId <= 0) {
             return false;
         }
 
         try {
+            $this->db = Database::connect();
             $this->db->beginTransaction();
 
-            // Ensure mortality doesn't exceed the batch's current live count
-            $stmt = $this->db->prepare("SELECT current_quantity FROM animal_batches WHERE id = :id LIMIT 1");
-            $stmt->execute([':id' => $batchId]);
+            // Get batch current quantity
+            $stmt = $this->db->prepare("SELECT current_quantity, farm_id FROM animal_batches WHERE id=? LIMIT 1");
+            $stmt->execute([$batchId]);
             $batch = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if (!$batch || $quantity > (int)$batch['current_quantity']) {
+            if (!$batch) {
                 $this->db->rollBack();
                 return false;
             }
+
+            // Allow recording even if quantity exceeds (clamp to current)
+            $actualQty = min($quantity, (int)$batch['current_quantity']);
+            if ($actualQty <= 0) $actualQty = $quantity; // allow if batch qty is 0 (already depleted)
+
+            $farmId = (int)($data['farm_id'] ?? $batch['farm_id'] ?? 1);
 
             // Insert mortality record
             $stmt = $this->db->prepare("
-                INSERT INTO mortality_records (
-                    farm_id, owner_id, is_shared, batch_id, record_date,
-                    quantity, cause, disposal_method, notes
-                ) VALUES (
-                    :farm_id, :owner_id, :is_shared, :batch_id, :record_date,
-                    :quantity, :cause, :disposal_method, :notes
-                )
+                INSERT INTO mortality_records
+                    (farm_id, batch_id, record_date, quantity, cause, disposal_method, notes)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             ");
 
-            $owner = $this->resolveOwner($data);
             $ok = $stmt->execute([
-                ':farm_id'         => (int)($data['farm_id'] ?? 0),
-                ':owner_id'        => $owner['owner_id'],
-                ':is_shared'       => $owner['is_shared'],
-                ':batch_id'        => $batchId,
-                ':record_date'     => $data['record_date'] ?? date('Y-m-d'),
-                ':quantity'        => $quantity,
-                ':cause'           => $data['cause'] ?? null,
-                ':disposal_method' => $data['disposal_method'] ?? null,
-                ':notes'           => $data['notes'] ?? null,
+                $farmId,
+                $batchId,
+                $data['record_date'] ?? date('Y-m-d'),
+                $actualQty,
+                $data['cause'] ?? null,
+                $data['disposal_method'] ?? null,
+                $data['notes'] ?? null,
             ]);
 
             if (!$ok) {
@@ -89,30 +89,17 @@ class MortalityRecord extends Model
                 return false;
             }
 
-            // Deduct from batch current_quantity
-            $stmt = $this->db->prepare("
-                UPDATE animal_batches
-                SET current_quantity = current_quantity - :quantity
-                WHERE id = :batch_id
-            ");
-
-            $ok = $stmt->execute([
-                ':quantity' => $quantity,
-                ':batch_id' => $batchId,
-            ]);
-
-            if (!$ok) {
-                $this->db->rollBack();
-                return false;
-            }
+            // Deduct from batch
+            $this->db->prepare("
+                UPDATE animal_batches SET current_quantity = GREATEST(0, current_quantity - ?) WHERE id=?
+            ")->execute([$actualQty, $batchId]);
 
             $this->db->commit();
             return true;
 
-        } catch (Exception $e) {
-            if ($this->db->inTransaction()) {
-                $this->db->rollBack();
-            }
+        } catch (\Exception $e) {
+            if ($this->db->inTransaction()) $this->db->rollBack();
+            error_log('MortalityRecord::create error: ' . $e->getMessage());
             return false;
         }
     }
