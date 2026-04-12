@@ -118,4 +118,10 @@ class User extends Model
         $stmt = $this->db->query("SELECT * FROM users ORDER BY created_at DESC");
         return $stmt->fetchAll();
     }
+
+    public function allOwners(): array
+    {
+        $stmt = $this->db->query("SELECT id, full_name, username FROM users WHERE role IN ('owner','admin') AND is_active = 1 ORDER BY id");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
 }

@@ -31,12 +31,16 @@ class ExpenseController extends Controller
     {
         $records = $this->expenseModel->all();
         $totals = $this->expenseModel->totals();
+        $ownerBreakdown = $this->expenseModel->byOwner();
+        $owners = $this->userModel->allOwners();
 
         $this->view('expenses/index', [
             'pageTitle' => 'Expenses',
             'sidebarType' => 'financial',
             'records' => $records,
             'totals' => $totals,
+            'ownerBreakdown' => $ownerBreakdown,
+            'owners' => $owners,
         ], 'admin');
     }
 
@@ -46,7 +50,7 @@ class ExpenseController extends Controller
         $farms = $this->farmModel->all();
         $categories = $this->expenseCategoryModel->all();
         $suppliers = $this->supplierModel->all();
-        $users = $this->userModel->all();
+        $users = $this->userModel->allOwners();
 
         $this->view('expenses/create', [
             'pageTitle' => 'Add Expense',
@@ -62,14 +66,15 @@ class ExpenseController extends Controller
     public function store(): void
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Debug: log what's being submitted
-            error_log("Expense store - POST data: " . print_r($_POST, true));
-            
-            $result = $this->expenseModel->create($_POST);
-            
-            error_log("Expense create result: " . ($result ? 'success' : 'failed'));
+            // Auto-categorize if no category selected
+            if (empty($_POST['category_id'])) {
+                $desc = $_POST['description'] ?? '';
+                $autoCategory = $this->expenseModel->autoCategory($desc);
+                $catId = $this->expenseCategoryModel->findOrCreate($autoCategory);
+                $_POST['category_id'] = $catId;
+            }
+            $this->expenseModel->create($_POST);
         }
-
         header('Location: ' . rtrim(BASE_URL, '/') . '/expenses');
         exit;
     }

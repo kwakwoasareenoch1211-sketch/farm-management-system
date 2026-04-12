@@ -123,6 +123,7 @@ class Expense extends Model
             $stmt = $this->db->prepare("
                 INSERT INTO expenses (
                     farm_id,
+                    owner_id,
                     category_id,
                     expense_date,
                     description,
@@ -134,6 +135,7 @@ class Expense extends Model
                     notes
                 ) VALUES (
                     :farm_id,
+                    :owner_id,
                     :category_id,
                     :expense_date,
                     :description,
@@ -148,6 +150,7 @@ class Expense extends Model
 
             $ok = $stmt->execute([
                 ':farm_id' => (int)($data['farm_id'] ?? 0),
+                ':owner_id' => !empty($data['owner_id']) ? (int)$data['owner_id'] : null,
                 ':category_id' => (!empty($data['category_id']) && (int)$data['category_id'] > 0) ? (int)$data['category_id'] : null,
                 ':expense_date' => $data['expense_date'],
                 ':description' => $data['description'] ?? null,
@@ -622,5 +625,78 @@ class Expense extends Model
         ");
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    public function byOwner(): array
+    {
+        $this->db = Database::connect();
+        // Get all owners
+        $owners = $this->db->query("SELECT id, full_name, username FROM users WHERE role IN ('owner','admin') ORDER BY id")->fetchAll(PDO::FETCH_ASSOC);
+
+        $result = [];
+        foreach ($owners as $owner) {
+            $oid = (int)$owner['id'];
+
+            // Total expenses for this owner
+            $total = (float)$this->db->query("
+                SELECT COALESCE(SUM(amount), 0) FROM expenses WHERE owner_id = $oid
+            ")->fetchColumn();
+
+            // This month
+            $month = (float)$this->db->query("
+                SELECT COALESCE(SUM(amount), 0) FROM expenses
+                WHERE owner_id = $oid AND MONTH(expense_date) = MONTH(CURDATE()) AND YEAR(expense_date) = YEAR(CURDATE())
+            ")->fetchColumn();
+
+            // Total paid
+            $paid = (float)$this->db->query("
+                SELECT COALESCE(SUM(amount_paid), 0) FROM expenses WHERE owner_id = $oid
+            ")->fetchColumn();
+
+            // Total sales revenue for this owner
+            $revenue = (float)$this->db->query("
+                SELECT COALESCE(SUM(total_amount), 0) FROM sales WHERE farm_id IN (
+                    SELECT id FROM farms LIMIT 1
+                )
+            ")->fetchColumn();
+
+            // By category
+            $cats = $this->db->query("
+                SELECT COALESCE(ec.category_name, 'Uncategorized') AS cat, SUM(e.amount) AS total
+                FROM expenses e
+                LEFT JOIN expense_categories ec ON ec.id = e.category_id
+                WHERE e.owner_id = $oid
+                GROUP BY cat ORDER BY total DESC
+            ")->fetchAll(PDO::FETCH_ASSOC);
+
+            $result[] = [
+                'id'         => $oid,
+                'name'       => $owner['full_name'],
+                'username'   => $owner['username'],
+                'total'      => $total,
+                'this_month' => $month,
+                'paid'       => $paid,
+                'balance'    => $total - $paid,
+                'revenue'    => $revenue / max(count($owners), 1), // split revenue equally
+                'margin'     => $revenue > 0 ? (($revenue / max(count($owners), 1)) - $total) : -$total,
+                'categories' => $cats,
+            ];
+        }
+
+        return $result;
+    }
+
+    public function autoCategory(string $description): string
+    {
+        $desc = strtolower($description);
+        if (str_contains($desc, 'feed') || str_contains($desc, 'grain') || str_contains($desc, 'pellet')) return 'Feed';
+        if (str_contains($desc, 'medic') || str_contains($desc, 'drug') || str_contains($desc, 'vaccine') || str_contains($desc, 'vet')) return 'Veterinary';
+        if (str_contains($desc, 'labour') || str_contains($desc, 'labor') || str_contains($desc, 'salary') || str_contains($desc, 'wage')) return 'Labour';
+        if (str_contains($desc, 'electric') || str_contains($desc, 'water') || str_contains($desc, 'utility') || str_contains($desc, 'bill')) return 'Utilities';
+        if (str_contains($desc, 'transport') || str_contains($desc, 'fuel') || str_contains($desc, 'delivery')) return 'Transport';
+        if (str_contains($desc, 'repair') || str_contains($desc, 'maintenance') || str_contains($desc, 'fix')) return 'Maintenance';
+        if (str_contains($desc, 'equipment') || str_contains($desc, 'tool') || str_contains($desc, 'machine')) return 'Equipment';
+        if (str_contains($desc, 'rent') || str_contains($desc, 'lease')) return 'Rent';
+        return 'General';
     }
 }

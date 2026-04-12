@@ -12,6 +12,16 @@
     <form method="POST" action="<?= rtrim(BASE_URL, '/') ?>/expenses/store">
         <div class="row g-3">
             <div class="col-md-4">
+                <label class="form-label fw-semibold">Owner <span class="text-danger">*</span></label>
+                <select name="owner_id" class="form-select" required>
+                    <option value="">Select owner</option>
+                    <?php foreach ($users as $u): if (!in_array($u['role'] ?? 'admin', ['owner','admin'])) continue; ?>
+                        <option value="<?= (int)$u['id'] ?>"><?= htmlspecialchars($u['full_name']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="col-md-4">
                 <label class="form-label">Farm</label>
                 <select name="farm_id" class="form-select" required>
                     <option value="">Select farm</option>
