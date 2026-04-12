@@ -21,6 +21,7 @@ $base        = rtrim(BASE_URL, '/');
         <div class="card-body p-4">
             <form method="POST" action="<?= $base ?>/batches/store">
                 <div class="row g-3">
+                    <?php include BASE_PATH . 'app/views/layouts/owner_selector.php'; ?>
 
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Farm <span class="text-danger">*</span></label>

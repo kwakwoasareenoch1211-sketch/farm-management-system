@@ -11,6 +11,8 @@
 
     <form method="POST" action="<?= rtrim(BASE_URL, '/') ?>/egg-production/store">
         <div class="row g-3">
+            <?php include BASE_PATH . 'app/views/layouts/owner_selector.php'; ?>
+
             <div class="col-md-4">
                 <label class="form-label">Farm ID</label>
                 <input type="number" name="farm_id" class="form-control" value="1" required>

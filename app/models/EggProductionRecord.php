@@ -26,11 +26,12 @@ class EggProductionRecord extends Model
     public function create(array $data): bool
     {
         $stmt = $this->db->prepare("
-            INSERT INTO egg_production_records (farm_id, batch_id, record_date, quantity, notes, created_by)
-            VALUES (:farm_id, :batch_id, :record_date, :quantity, :notes, :created_by)
+            INSERT INTO egg_production_records (farm_id, owner_id, batch_id, record_date, quantity, notes, created_by)
+            VALUES (:farm_id, :owner_id, :batch_id, :record_date, :quantity, :notes, :created_by)
         ");
         return $stmt->execute([
             ':farm_id'    => (int)($data['farm_id']    ?? 0),
+            ':owner_id'   => !empty($data['owner_id']) ? (int)$data['owner_id'] : null,
             ':batch_id'   => (int)($data['batch_id']   ?? 0),
             ':record_date'=> $data['record_date'],
             ':quantity'   => (float)($data['quantity'] ?? 0),

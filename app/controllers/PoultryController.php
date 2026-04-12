@@ -69,11 +69,16 @@ class PoultryController extends Controller
             'medication_cost' => (float)($medicationTotals['total_cost'] ?? 0),
         ];
 
+        require_once BASE_PATH . 'app/models/PoultryDashboard.php';
+        $poultryDash = new PoultryDashboard();
+        $ownerStats = $poultryDash->getOwnerStats();
+
         $this->view('poultry/dashboard', [
             'pageTitle'      => 'Poultry Operations',
             'sidebarType'    => 'poultry',
             'summary'        => $summary,
             'extraMetrics'   => $extraMetrics,
+            'ownerStats'     => $ownerStats,
             // Simplified inventory data
             'inventoryTotals' => $inventoryTotals,
             'recentInventoryActivities' => $recentInventoryActivities,

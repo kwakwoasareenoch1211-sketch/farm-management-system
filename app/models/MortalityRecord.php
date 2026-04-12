@@ -61,26 +61,17 @@ class MortalityRecord extends Model
             // Insert mortality record
             $stmt = $this->db->prepare("
                 INSERT INTO mortality_records (
-                    farm_id,
-                    batch_id,
-                    record_date,
-                    quantity,
-                    cause,
-                    disposal_method,
-                    notes
+                    farm_id, owner_id, batch_id, record_date,
+                    quantity, cause, disposal_method, notes
                 ) VALUES (
-                    :farm_id,
-                    :batch_id,
-                    :record_date,
-                    :quantity,
-                    :cause,
-                    :disposal_method,
-                    :notes
+                    :farm_id, :owner_id, :batch_id, :record_date,
+                    :quantity, :cause, :disposal_method, :notes
                 )
             ");
 
             $ok = $stmt->execute([
                 ':farm_id'         => (int)($data['farm_id'] ?? 0),
+                ':owner_id'        => !empty($data['owner_id']) ? (int)$data['owner_id'] : null,
                 ':batch_id'        => $batchId,
                 ':record_date'     => $data['record_date'] ?? date('Y-m-d'),
                 ':quantity'        => $quantity,

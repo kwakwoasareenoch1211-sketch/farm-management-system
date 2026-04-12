@@ -147,46 +147,27 @@ class Batch extends Model
 
         $stmt = $this->db->prepare("
             INSERT INTO animal_batches (
-                farm_id,
-                animal_type_id,
-                housing_unit_id,
-                batch_code,
-                batch_name,
-                production_purpose,
-                bird_subtype,
-                breed,
-                source_name,
-                purchase_date,
-                start_date,
-                expected_end_date,
-                initial_quantity,
-                current_quantity,
-                initial_unit_cost,
-                status,
-                notes
+                farm_id, owner_id,
+                animal_type_id, housing_unit_id,
+                batch_code, batch_name, production_purpose,
+                bird_subtype, breed, source_name, purchase_date,
+                start_date, expected_end_date,
+                initial_quantity, current_quantity, initial_unit_cost,
+                status, notes
             ) VALUES (
-                :farm_id,
-                :animal_type_id,
-                :housing_unit_id,
-                :batch_code,
-                :batch_name,
-                :production_purpose,
-                :bird_subtype,
-                :breed,
-                :source_name,
-                :purchase_date,
-                :start_date,
-                :expected_end_date,
-                :initial_quantity,
-                :current_quantity,
-                :initial_unit_cost,
-                :status,
-                :notes
+                :farm_id, :owner_id,
+                :animal_type_id, :housing_unit_id,
+                :batch_code, :batch_name, :production_purpose,
+                :bird_subtype, :breed, :source_name, :purchase_date,
+                :start_date, :expected_end_date,
+                :initial_quantity, :current_quantity, :initial_unit_cost,
+                :status, :notes
             )
         ");
 
         return $stmt->execute([
             ':farm_id' => $farmId,
+            ':owner_id' => !empty($data['owner_id']) ? (int)$data['owner_id'] : null,
             ':animal_type_id' => $animalTypeId,
             ':housing_unit_id' => $housingUnitId,
             ':batch_code' => $batchCode,

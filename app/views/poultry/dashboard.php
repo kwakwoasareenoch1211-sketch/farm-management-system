@@ -78,6 +78,74 @@ $base = rtrim(BASE_URL, '/');
         <h2 class="fw-bold mb-1">Poultry & Inventory Operations</h2>
         <p class="text-muted mb-0">Complete farm management: batches, eggs, feed, health, medication, and inventory - all in one place.</p>
     </div>
+
+<?php
+// Owner Stats Section
+$ownerStats = $ownerStats ?? [];
+if (!empty($ownerStats)):
+?>
+<!-- OWNER BREAKDOWN -->
+<div class="row g-4 mb-4 w-100">
+    <?php foreach ($ownerStats as $owner):
+        $totalCost = $owner['feed_cost'] + $owner['med_cost'] + $owner['vac_cost'];
+        $mortalityPct = $owner['birds'] > 0 ? round(($owner['mortality'] / ($owner['birds'] + $owner['mortality'])) * 100, 1) : 0;
+    ?>
+    <div class="col-md-6">
+        <div class="pou-card p-4 h-100" style="border-left:4px solid <?= $owner['color'] ?>;">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
+                     style="width:44px;height:44px;background:<?= $owner['color'] ?>;font-size:18px;flex-shrink:0;">
+                    <?= strtoupper(substr($owner['name'], 0, 1)) ?>
+                </div>
+                <div>
+                    <div class="fw-bold fs-6"><?= htmlspecialchars($owner['name']) ?></div>
+                    <div class="text-muted small">@<?= htmlspecialchars($owner['username']) ?></div>
+                </div>
+                <span class="badge ms-auto rounded-pill px-3" style="background:<?= $owner['color'] ?>20;color:<?= $owner['color'] ?>;">
+                    <?= $owner['batches'] ?> batch<?= $owner['batches'] != 1 ? 'es' : '' ?>
+                </span>
+            </div>
+
+            <div class="row g-2 mb-3">
+                <div class="col-4 text-center">
+                    <div class="pou-soft">
+                        <div class="fw-bold fs-5" style="color:<?= $owner['color'] ?>"><?= number_format($owner['birds']) ?></div>
+                        <div class="small text-muted">Live Birds</div>
+                    </div>
+                </div>
+                <div class="col-4 text-center">
+                    <div class="pou-soft">
+                        <div class="fw-bold fs-5 text-warning"><?= number_format($owner['eggs']) ?></div>
+                        <div class="small text-muted">Eggs</div>
+                    </div>
+                </div>
+                <div class="col-4 text-center">
+                    <div class="pou-soft">
+                        <div class="fw-bold fs-5 <?= $mortalityPct > 5 ? 'text-danger' : 'text-success' ?>"><?= $mortalityPct ?>%</div>
+                        <div class="small text-muted">Mortality</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-2">
+                <div class="col-4 text-center">
+                    <div class="small text-muted">Feed Cost</div>
+                    <div class="fw-semibold small">GHS <?= number_format($owner['feed_cost'], 0) ?></div>
+                </div>
+                <div class="col-4 text-center" style="border-left:1px solid #e2e8f0;border-right:1px solid #e2e8f0;">
+                    <div class="small text-muted">Med Cost</div>
+                    <div class="fw-semibold small">GHS <?= number_format($owner['med_cost'], 0) ?></div>
+                </div>
+                <div class="col-4 text-center">
+                    <div class="small text-muted">Total Cost</div>
+                    <div class="fw-semibold small text-danger">GHS <?= number_format($totalCost, 0) ?></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php endforeach; ?>
+</div>
+<?php endif; ?>
     <div class="d-flex gap-2 flex-wrap">
         <a href="<?= $base ?>/batches/create"         class="btn btn-dark btn-sm"><i class="bi bi-plus-circle me-1"></i>New Batch</a>
         <a href="<?= $base ?>/egg-production/create"  class="btn btn-warning btn-sm"><i class="bi bi-egg me-1"></i>Log Eggs</a>

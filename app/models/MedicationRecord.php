@@ -28,12 +28,12 @@ class MedicationRecord extends Model
         try {
             $stmt = $this->db->prepare("
                 INSERT INTO medication_records (
-                    farm_id, batch_id, inventory_item_id, record_date,
+                    farm_id, owner_id, batch_id, inventory_item_id, record_date,
                     medication_name, condition_treated, dosage,
                     quantity_used, unit, unit_cost,
                     administered_by, withdrawal_period_days, notes, created_by
                 ) VALUES (
-                    :farm_id, :batch_id, NULL, :record_date,
+                    :farm_id, :owner_id, :batch_id, NULL, :record_date,
                     :medication_name, :condition_treated, :dosage,
                     :quantity_used, :unit, :unit_cost,
                     :administered_by, :withdrawal_period_days, :notes, :created_by
@@ -42,6 +42,7 @@ class MedicationRecord extends Model
 
             return $stmt->execute([
                 ':farm_id'               => (int)($data['farm_id'] ?? 0),
+                ':owner_id'              => !empty($data['owner_id']) ? (int)$data['owner_id'] : null,
                 ':batch_id'              => (int)($data['batch_id'] ?? 0),
                 ':record_date'           => $data['record_date'],
                 ':medication_name'       => trim($data['medication_name'] ?? ''),

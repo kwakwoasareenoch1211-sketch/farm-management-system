@@ -35,18 +35,19 @@ class Feed extends Model
         try {
             $stmt = $this->db->prepare("
                 INSERT INTO feed_records (
-                    farm_id, batch_id, inventory_item_id,
+                    farm_id, owner_id, batch_id, inventory_item_id,
                     record_date, feed_name, quantity_kg, unit_cost, notes
                 ) VALUES (
-                    :farm_id, :batch_id, :inventory_item_id,
+                    :farm_id, :owner_id, :batch_id, :inventory_item_id,
                     :record_date, :feed_name, :quantity_kg, :unit_cost, :notes
                 )
             ");
 
             return $stmt->execute([
                 ':farm_id'            => (int)($data['farm_id'] ?? 1),
+                ':owner_id'           => !empty($data['owner_id']) ? (int)$data['owner_id'] : null,
                 ':batch_id'           => (int)($data['batch_id'] ?? 0),
-                ':inventory_item_id'  => null, // No longer used
+                ':inventory_item_id'  => null,
                 ':record_date'        => $data['record_date'],
                 ':feed_name'          => $feedName,
                 ':quantity_kg'        => $quantityKg,
