@@ -71,6 +71,9 @@ $totalCapital = (float)($totals['total_capital'] ?? 0);
     <a href="<?= $base ?>/capital/create" class="btn btn-dark">
         <i class="bi bi-plus-circle me-1"></i> Add Capital Entry
     </a>
+    <a href="<?= $base ?>/capital/advances" class="btn btn-outline-warning">
+        <i class="bi bi-person-check me-1"></i> Owner Advances
+    </a>
 </div>
 
 <!-- BUSINESS TOTALS -->

@@ -5,6 +5,7 @@ require_once BASE_PATH . 'app/models/Feed.php';
 require_once BASE_PATH . 'app/models/Farm.php';
 require_once BASE_PATH . 'app/models/Batch.php';
 require_once BASE_PATH . 'app/models/InventoryItem.php';
+require_once BASE_PATH . 'app/models/User.php';
 
 class FeedController extends Controller
 {
@@ -41,6 +42,7 @@ class FeedController extends Controller
             'sidebarType' => 'poultry',
             'farms'       => $this->farmModel->all(),
             'batches'     => $this->batchModel->all(),
+            'owners'      => (new User())->allOwners(),
         ], 'admin');
     }
 
@@ -48,8 +50,19 @@ class FeedController extends Controller
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->feedModel->create($_POST);
-        }
 
+            // Auto-create owner advance if owner paid personally
+            if (!empty($_POST['paid_by']) && is_numeric($_POST['paid_by'])) {
+                $cost = (float)($_POST['quantity_kg'] ?? 0) * (float)($_POST['unit_cost'] ?? 0);
+                if ($cost > 0) {
+                    try {
+                        $db = \Database::connect();
+                        $db->prepare("INSERT INTO owner_advances (owner_id, source_type, advance_date, amount, description, status) VALUES (?,?,?,?,?,'outstanding')")
+                           ->execute([(int)$_POST['paid_by'], 'feed', $_POST['record_date'] ?? date('Y-m-d'), $cost, 'Feed: ' . ($_POST['feed_name'] ?? '')]);
+                    } catch (\Throwable $e) {}
+                }
+            }
+        }
         header('Location: ' . rtrim(BASE_URL, '/') . '/feed');
         exit;
     }

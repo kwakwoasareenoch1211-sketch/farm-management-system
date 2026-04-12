@@ -81,4 +81,59 @@ class CapitalController extends Controller
         header('Location: ' . rtrim(BASE_URL, '/') . '/capital');
         exit;
     }
+
+    public function advances(): void
+    {
+        $db = \Database::connect();
+
+        $advances = $db->query("
+            SELECT oa.*, u.full_name
+            FROM owner_advances oa
+            LEFT JOIN users u ON u.id = oa.owner_id
+            ORDER BY oa.advance_date DESC, oa.id DESC
+        ")->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+
+        $ownerSummary = $db->query("
+            SELECT u.id, u.full_name,
+                COUNT(oa.id) AS advance_count,
+                COALESCE(SUM(oa.amount), 0) AS total_advanced,
+                COALESCE(SUM(oa.repaid_amount), 0) AS total_repaid
+            FROM users u
+            LEFT JOIN owner_advances oa ON oa.owner_id = u.id
+            WHERE u.role IN ('owner','admin')
+            GROUP BY u.id, u.full_name
+            ORDER BY total_advanced DESC
+        ")->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+
+        $this->view('capital/advances', [
+            'pageTitle'    => 'Owner Advances',
+            'sidebarType'  => 'financial',
+            'advances'     => $advances,
+            'ownerSummary' => $ownerSummary,
+        ], 'admin');
+    }
+
+    public function repayAdvance(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id     = (int)($_POST['advance_id'] ?? 0);
+            $amount = (float)($_POST['repay_amount'] ?? 0);
+
+            if ($id > 0 && $amount > 0) {
+                $db = \Database::connect();
+                $adv = $db->prepare("SELECT * FROM owner_advances WHERE id=? LIMIT 1");
+                $adv->execute([$id]);
+                $row = $adv->fetch(\PDO::FETCH_ASSOC);
+
+                if ($row) {
+                    $newRepaid = min((float)$row['amount'], (float)$row['repaid_amount'] + $amount);
+                    $status = $newRepaid >= (float)$row['amount'] ? 'repaid' : 'partial';
+                    $db->prepare("UPDATE owner_advances SET repaid_amount=?, status=?, repaid_date=? WHERE id=?")
+                       ->execute([$newRepaid, $status, date('Y-m-d'), $id]);
+                }
+            }
+        }
+        header('Location: ' . rtrim(BASE_URL, '/') . '/capital/advances');
+        exit;
+    }
 }

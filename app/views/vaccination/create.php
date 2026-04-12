@@ -13,6 +13,7 @@ $inventoryItems = $inventoryItems ?? [];
 
     <form method="POST" action="<?= rtrim(BASE_URL, '/') ?>/vaccination/store">
         <div class="row g-3">
+            <?php include BASE_PATH . 'app/views/layouts/paid_by_selector.php'; ?>
 <div class="col-md-4">
                 <label class="form-label">Farm</label>
                 <select name="farm_id" class="form-select" required>

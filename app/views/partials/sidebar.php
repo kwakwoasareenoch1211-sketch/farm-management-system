@@ -50,6 +50,7 @@ $menus = [
         ['label' => 'Losses & Write-offs',  'icon' => 'bi-exclamation-triangle', 'url' => nav_url('losses'),        'match' => 'losses'],
         ['label' => 'Capital',              'icon' => 'bi-bank',              'url' => nav_url('capital'),          'match' => 'capital'],
         ['label' => 'Add Capital',          'icon' => 'bi-plus-circle',       'url' => nav_url('capital/create'),   'match' => 'capital/create'],
+        ['label' => 'Owner Advances',       'icon' => 'bi-person-check',      'url' => nav_url('capital/advances'), 'match' => 'capital/advances'],
         ['label' => 'Investments',          'icon' => 'bi-graph-up',          'url' => nav_url('investments'),      'match' => 'investments'],
         ['label' => 'Add Investment',       'icon' => 'bi-plus-circle',       'url' => nav_url('investments/create'),'match' => 'investments/create'],
         ['label' => 'Profit & Loss',        'icon' => 'bi-file-earmark-text', 'url' => nav_url('profit-loss'),      'match' => 'profit-loss'],

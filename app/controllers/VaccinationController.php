@@ -5,6 +5,7 @@ require_once BASE_PATH . 'app/models/VaccinationRecord.php';
 require_once BASE_PATH . 'app/models/Farm.php';
 require_once BASE_PATH . 'app/models/Batch.php';
 require_once BASE_PATH . 'app/models/InventoryItem.php';
+require_once BASE_PATH . 'app/models/User.php';
 
 class VaccinationController extends Controller
 {
@@ -42,6 +43,7 @@ class VaccinationController extends Controller
             'farms' => $this->farmModel->all(),
             'batches' => $this->batchModel->all(),
             'inventoryItems' => $this->inventoryItemModel->all(),
+            'owners' => (new User())->allOwners(),
         ], 'admin');
     }
 
@@ -54,8 +56,19 @@ class VaccinationController extends Controller
                 header('Location: ' . rtrim(BASE_URL, '/') . '/vaccination/create?error=insufficient_stock');
                 exit;
             }
-        }
 
+            // Auto-create owner advance if owner paid personally
+            if (!empty($_POST['paid_by']) && is_numeric($_POST['paid_by'])) {
+                $cost = (float)($_POST['cost_amount'] ?? 0);
+                if ($cost > 0) {
+                    try {
+                        $db = \Database::connect();
+                        $db->prepare("INSERT INTO owner_advances (owner_id, source_type, advance_date, amount, description, status) VALUES (?,?,?,?,?,'outstanding')")
+                           ->execute([(int)$_POST['paid_by'], 'vaccination', $_POST['record_date'] ?? date('Y-m-d'), $cost, 'Vaccination: ' . ($_POST['vaccine_name'] ?? '')]);
+                    } catch (\Throwable $e) {}
+                }
+            }
+        }
         header('Location: ' . rtrim(BASE_URL, '/') . '/vaccination');
         exit;
     }
