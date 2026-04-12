@@ -19,6 +19,7 @@ $menus = [
         ['label' => 'Poultry', 'icon' => 'bi-feather', 'url' => nav_url('poultry'), 'match' => 'poultry'],
         ['label' => 'Financial', 'icon' => 'bi-cash-stack', 'url' => nav_url('financial'), 'match' => 'financial'],
         ['label' => 'Economic', 'icon' => 'bi-graph-up-arrow', 'url' => nav_url('economic'), 'match' => 'economic'],
+        ['label' => 'Inventory', 'icon' => 'bi-boxes', 'url' => nav_url('inventory'), 'match' => 'inventory'],
         ['label' => 'Reports', 'icon' => 'bi-file-earmark-bar-graph', 'url' => nav_url('reports'), 'match' => 'reports'],
         ['label' => 'Sales', 'icon' => 'bi-cart3', 'url' => nav_url('sales'), 'match' => 'sales'],
         ['label' => 'Users', 'icon' => 'bi-people', 'url' => nav_url('users'), 'match' => 'users'],
@@ -89,6 +90,18 @@ $menus = [
     ],
 
 
+
+    'inventory' => [
+        ['label' => 'Inventory Dashboard', 'icon' => 'bi-boxes',           'url' => nav_url('inventory'),                  'match' => 'inventory'],
+        ['label' => 'Items',               'icon' => 'bi-box-seam',        'url' => nav_url('inventory/items'),            'match' => 'inventory/items'],
+        ['label' => 'Add Item',            'icon' => 'bi-plus-circle',     'url' => nav_url('inventory/items/create'),     'match' => 'inventory/items/create'],
+        ['label' => 'Stock Receipts',      'icon' => 'bi-box-arrow-in-down','url' => nav_url('inventory/receipts'),        'match' => 'inventory/receipts'],
+        ['label' => 'Receive Stock',       'icon' => 'bi-plus-circle',     'url' => nav_url('inventory/receipts/create'),  'match' => 'inventory/receipts/create'],
+        ['label' => 'Stock Issues',        'icon' => 'bi-box-arrow-up',    'url' => nav_url('inventory/issues'),           'match' => 'inventory/issues'],
+        ['label' => 'Issue Stock',         'icon' => 'bi-plus-circle',     'url' => nav_url('inventory/issues/create'),    'match' => 'inventory/issues/create'],
+        ['label' => 'Low Stock Alert',     'icon' => 'bi-exclamation-triangle', 'url' => nav_url('inventory/low-stock'),   'match' => 'inventory/low-stock'],
+        ['label' => 'Back to Admin',       'icon' => 'bi-arrow-left',      'url' => nav_url('admin'),                      'match' => 'admin'],
+    ],
 
     'reports' => [
     ['label' => 'Reports Dashboard', 'icon' => 'bi-bar-chart', 'url' => nav_url('reports'), 'match' => 'reports'],

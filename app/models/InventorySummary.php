@@ -182,4 +182,60 @@ class InventorySummary extends Model
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
+
+    /**
+     * Monthly stock movement breakdown from stock_movements table
+     */
+    public function monthlyMovementBreakdown(int $months = 6): array
+    {
+        try {
+            $stmt = $this->db->prepare("
+                SELECT
+                    DATE_FORMAT(movement_date, '%Y-%m') AS month_key,
+                    DATE_FORMAT(movement_date, '%b %Y') AS month_label,
+                    COALESCE(SUM(CASE WHEN movement_type='receipt' THEN quantity ELSE 0 END), 0) AS stock_in,
+                    COALESCE(SUM(CASE WHEN movement_type='issue' THEN quantity ELSE 0 END), 0) AS stock_out
+                FROM stock_movements
+                WHERE movement_date >= DATE_SUB(CURDATE(), INTERVAL :months MONTH)
+                GROUP BY month_key, month_label
+                ORDER BY month_key ASC
+            ");
+            $stmt->bindValue(':months', $months, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
+
+    public function totalStockValue(): float
+    {
+        try {
+            return (float)$this->db->query("
+                SELECT COALESCE(SUM(current_stock * unit_cost), 0) FROM inventory_item WHERE current_stock > 0
+            ")->fetchColumn();
+        } catch (\Throwable $e) {
+            return 0.0;
+        }
+    }
+
+    public function itemCount(): int
+    {
+        try {
+            return (int)$this->db->query("SELECT COUNT(*) FROM inventory_item")->fetchColumn();
+        } catch (\Throwable $e) {
+            return 0;
+        }
+    }
+
+    public function lowStockCount(): int
+    {
+        try {
+            return (int)$this->db->query("
+                SELECT COUNT(*) FROM inventory_item WHERE current_stock <= reorder_level AND reorder_level > 0
+            ")->fetchColumn();
+        } catch (\Throwable $e) {
+            return 0;
+        }
+    }
 }

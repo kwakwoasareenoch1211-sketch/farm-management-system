@@ -9,9 +9,67 @@ class InventoryController extends Controller
 {
     public function dashboard(): void
     {
-        // Redirect to poultry dashboard (inventory is integrated there)
-        header('Location: ' . rtrim(BASE_URL, '/') . '/poultry');
-        exit;
+        $inventoryItem   = new InventoryItem();
+        $inventorySummary = new InventorySummary();
+        $db = \Database::connect();
+
+        // Stock items from inventory_item table
+        $items = $inventoryItem->all();
+        $totalItems = count($items);
+        $totalStockValue = 0;
+        $lowStockItems = [];
+        $categoryBreakdown = [];
+
+        foreach ($items as $item) {
+            $val = (float)($item['current_stock'] ?? 0) * (float)($item['unit_cost'] ?? 0);
+            $totalStockValue += $val;
+            $cat = $item['category'] ?? 'Other';
+            if (!isset($categoryBreakdown[$cat])) $categoryBreakdown[$cat] = ['count' => 0, 'value' => 0];
+            $categoryBreakdown[$cat]['count']++;
+            $categoryBreakdown[$cat]['value'] += $val;
+            if ((float)($item['current_stock'] ?? 0) <= (float)($item['reorder_level'] ?? 0) && (float)($item['reorder_level'] ?? 0) > 0) {
+                $lowStockItems[] = $item;
+            }
+        }
+
+        // Recent stock movements
+        $recentMovements = [];
+        try {
+            $recentMovements = $db->query("
+                SELECT sm.*, ii.item_name, ii.unit_of_measure
+                FROM stock_movements sm
+                LEFT JOIN inventory_item ii ON ii.id = sm.item_id
+                ORDER BY sm.movement_date DESC, sm.id DESC
+                LIMIT 10
+            ")->fetchAll() ?: [];
+        } catch (\Throwable $e) {}
+
+        // Monthly movement totals
+        $monthlyIn = 0; $monthlyOut = 0;
+        try {
+            $row = $db->query("
+                SELECT
+                    COALESCE(SUM(CASE WHEN movement_type='receipt' THEN quantity ELSE 0 END),0) AS total_in,
+                    COALESCE(SUM(CASE WHEN movement_type='issue' THEN quantity ELSE 0 END),0) AS total_out
+                FROM stock_movements
+                WHERE MONTH(movement_date)=MONTH(CURDATE()) AND YEAR(movement_date)=YEAR(CURDATE())
+            ")->fetch();
+            $monthlyIn  = (float)($row['total_in']  ?? 0);
+            $monthlyOut = (float)($row['total_out'] ?? 0);
+        } catch (\Throwable $e) {}
+
+        $this->view('inventory/dashboard', [
+            'pageTitle'         => 'Inventory Dashboard',
+            'sidebarType'       => 'inventory',
+            'items'             => $items,
+            'totalItems'        => $totalItems,
+            'totalStockValue'   => $totalStockValue,
+            'lowStockItems'     => $lowStockItems,
+            'categoryBreakdown' => $categoryBreakdown,
+            'recentMovements'   => $recentMovements,
+            'monthlyIn'         => $monthlyIn,
+            'monthlyOut'        => $monthlyOut,
+        ], 'admin');
     }
 
     public function items(): void
@@ -26,7 +84,7 @@ class InventoryController extends Controller
 
         $this->view('inventory/items/index', [
             'pageTitle' => 'Inventory Items',
-            'sidebarType' => 'poultry',
+            'sidebarType' => 'inventory',
             'inventoryItems' => $inventoryItems,
             'totals' => $totals,
             'categorySummary' => $categorySummary,
@@ -41,7 +99,7 @@ class InventoryController extends Controller
 
         $this->view('inventory/items/create', [
             'pageTitle' => 'Add Inventory Item',
-            'sidebarType' => 'poultry',
+            'sidebarType' => 'inventory',
             'farms' => $farms,
         ], 'admin');
     }
@@ -77,7 +135,7 @@ class InventoryController extends Controller
 
         $this->view('inventory/items/edit', [
             'pageTitle' => 'Edit Inventory Item',
-            'sidebarType' => 'poultry',
+            'sidebarType' => 'inventory',
             'item' => $item,
             'farms' => $farms,
         ], 'admin');
@@ -114,3 +172,4 @@ class InventoryController extends Controller
         exit;
     }
 }
+
