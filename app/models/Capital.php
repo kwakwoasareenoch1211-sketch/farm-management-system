@@ -98,6 +98,7 @@ class Capital extends Model
     public function totals(): array
     {
         try {
+            $this->db = \Database::connect();
             $row = $this->db->query("
                 SELECT
                     COUNT(*) AS total_records,
@@ -108,9 +109,11 @@ class Capital extends Model
                     COALESCE(SUM(CASE WHEN capital_type='reinvestment' THEN amount ELSE 0 END), 0) AS reinvestment,
                     COALESCE(SUM(CASE WHEN capital_type='grant' THEN amount ELSE 0 END), 0) AS grant
                 FROM capital_entries
-            ")->fetch(PDO::FETCH_ASSOC) ?: [];
-            return $row;
-        } catch (\Throwable $e) { return []; }
+            ")->fetch(PDO::FETCH_ASSOC);
+            return $row ?: ['total_records'=>0,'total_capital'=>0,'owner_equity'=>0,'retained_earnings'=>0,'loan_capital'=>0,'reinvestment'=>0,'grant'=>0];
+        } catch (\Throwable $e) {
+            return ['total_records'=>0,'total_capital'=>0,'owner_equity'=>0,'retained_earnings'=>0,'loan_capital'=>0,'reinvestment'=>0,'grant'=>0];
+        }
     }
 
     /**

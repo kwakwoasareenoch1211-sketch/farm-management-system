@@ -45,28 +45,28 @@ $totalCapital = (float)($totals['total_capital'] ?? 0);
 <!-- BUSINESS TOTALS -->
 <div class="row g-4 mb-4">
     <div class="col-md-3">
-        <div class="cap-kpi">
+        <div class="cap-kpi" style="border-left:4px solid #3b82f6;">
             <div class="lbl">Total Business Capital</div>
-            <div class="val text-primary">GHS <?= number_format($totalCapital, 2) ?></div>
-            <div class="small text-muted mt-1">All contributions combined</div>
+            <div class="val text-primary">GHS <?= number_format((float)($totals['total_capital'] ?? 0), 2) ?></div>
+            <div class="small text-muted mt-1"><?= (int)($totals['total_records'] ?? 0) ?> entr<?= ($totals['total_records'] ?? 0) == 1 ? 'y' : 'ies' ?> combined</div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="cap-kpi">
+        <div class="cap-kpi" style="border-left:4px solid #6366f1;">
             <div class="lbl">Owner Equity</div>
             <div class="val">GHS <?= number_format((float)($totals['owner_equity'] ?? 0), 2) ?></div>
             <div class="small text-muted mt-1">Initial capital invested</div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="cap-kpi">
+        <div class="cap-kpi" style="border-left:4px solid #10b981;">
             <div class="lbl">Reinvestment</div>
             <div class="val text-success">GHS <?= number_format((float)($totals['reinvestment'] ?? 0), 2) ?></div>
             <div class="small text-muted mt-1">Profits put back in</div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="cap-kpi">
+        <div class="cap-kpi" style="border-left:4px solid #ef4444;">
             <div class="lbl">Loan Capital</div>
             <div class="val text-danger">GHS <?= number_format((float)($totals['loan_capital'] ?? 0), 2) ?></div>
             <div class="small text-muted mt-1">Borrowed funds</div>
@@ -83,7 +83,8 @@ $totalCapital = (float)($totals['total_capital'] ?? 0);
     <div class="row g-4">
         <?php foreach ($byContributor as $i => $c):
             $color = $ownerColors[$i % count($ownerColors)];
-            $pct   = $totalCapital > 0 ? ($c['total_contributed'] / $totalCapital) * 100 : 0;
+            $freshTotal = (float)($totals['total_capital'] ?? 0);
+            $pct   = $freshTotal > 0 ? ((float)$c['total_contributed'] / $freshTotal) * 100 : 0;
         ?>
         <div class="col-md-6">
             <div class="contributor-card" style="border-color:<?= $color ?>30;">
@@ -209,7 +210,8 @@ $totalCapital = (float)($totals['total_capital'] ?? 0);
                 <?php foreach ($byType as $t):
                     $ct  = $t['capital_type'] ?? 'other';
                     $cfg = $typeLabels[$ct] ?? $typeLabels['other'];
-                    $pct = $totalCapital > 0 ? ((float)$t['total'] / $totalCapital) * 100 : 0;
+                    $freshTotal2 = (float)($totals['total_capital'] ?? 0);
+                    $pct = $freshTotal2 > 0 ? ((float)$t['total'] / $freshTotal2) * 100 : 100;
                 ?>
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center mb-1">
