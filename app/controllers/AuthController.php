@@ -56,6 +56,11 @@ class AuthController extends Controller
 
     public function logout(): void
     {
+        // Trigger background backup on logout
+        $bat = 'C:\\xampp\\htdocs\\farmapp\\auto_backup.bat';
+        if (file_exists($bat)) {
+            pclose(popen('start /B cmd /c "' . $bat . '" > nul 2>&1', 'r'));
+        }
         Auth::logout();
         header('Location: ' . rtrim(BASE_URL, '/') . '/login');
         exit;
