@@ -27,24 +27,23 @@ $sourceConfig = [
 .source-breakdown.active{border-color:#3b82f6;background:#eff6ff;}
 </style>
 
+<?php
+$printTitle    = 'Business Expenses Report';
+$printSubtitle = 'All expenses: manual, livestock, feed, medication, vaccination';
+$exportUrl     = $base . '/expenses/export?format=csv';
+include BASE_PATH . 'app/views/layouts/print_toolbar.php';
+?>
+
 <!-- Header -->
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 d-print-none">
     <div>
         <span class="badge rounded-pill text-bg-dark mb-2 px-3 py-2">Financial Work Area</span>
         <h2 class="fw-bold mb-1">Business Expenses</h2>
         <p class="text-muted mb-0">All business expenses — one entity, tracked by source and category.</p>
     </div>
-    <div class="d-flex gap-2 flex-wrap">
-        <button onclick="window.print()" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-printer me-1"></i> Print
-        </button>
-        <a href="<?= $base ?>/expenses/export?format=csv" class="btn btn-outline-success btn-sm">
-            <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
-        </a>
-        <a href="<?= $base ?>/expenses/create" class="btn btn-dark btn-sm">
-            <i class="bi bi-plus-circle me-1"></i> Add Expense
-        </a>
-    </div>
+    <a href="<?= $base ?>/expenses/create" class="btn btn-dark btn-sm">
+        <i class="bi bi-plus-circle me-1"></i> Add Expense
+    </a>
 </div>
 
 <style>
