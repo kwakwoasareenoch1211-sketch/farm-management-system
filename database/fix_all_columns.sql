@@ -140,7 +140,7 @@ ALTER TABLE sales ADD COLUMN IF NOT EXISTS owner_id INT UNSIGNED NULL AFTER farm
 -- capital_entries
 ALTER TABLE capital_entries ADD COLUMN IF NOT EXISTS owner_id INT UNSIGNED NULL AFTER farm_id;
 ALTER TABLE capital_entries ADD COLUMN IF NOT EXISTS title VARCHAR(150) NULL AFTER entry_date;
-ALTER TABLE capital_entries ADD COLUMN IF NOT EXISTS capital_type ENUM('owner_equity','retained_earnings','loan_capital','grant_amount','reinvestment','other') DEFAULT 'owner_equity' AFTER title;
+ALTER TABLE capital_entries ADD COLUMN IF NOT EXISTS capital_type ENUM('owner_equity','retained_earnings','loan_capital','grant','reinvestment','other') DEFAULT 'owner_equity' AFTER title;
 ALTER TABLE capital_entries ADD COLUMN IF NOT EXISTS source_name VARCHAR(100) NULL AFTER capital_type;
 ALTER TABLE capital_entries ADD COLUMN IF NOT EXISTS reference_no VARCHAR(100) NULL AFTER source_name;
 
@@ -192,3 +192,4 @@ INSERT IGNORE INTO farms (id, farm_name, location) VALUES (1, 'Main Farm', 'Ghan
 INSERT IGNORE INTO animal_types (type_name) VALUES ('Poultry'),('Cattle'),('Goat'),('Pig'),('Sheep');
 INSERT IGNORE INTO housing_units (farm_id, unit_name, capacity) VALUES (1,'House A',500),(1,'House B',500),(1,'House C',1000),(1,'Open Range',2000);
 UPDATE users SET role='owner' WHERE role='admin' OR role IS NULL;
+

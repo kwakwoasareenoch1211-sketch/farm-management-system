@@ -140,27 +140,32 @@ class FinancialMonitor extends Model
         $groups = [];
         $base   = rtrim(BASE_URL, '/');
 
-        // Owner equity from capital_entries table (contributions)
+        // Capital from capital_entries - grouped by capital_type
         $rows = $this->fetchSafe("
-            SELECT entry_type,
+            SELECT COALESCE(capital_type, entry_type, 'owner_equity') AS cap_type,
                    COUNT(*) AS records,
                    COALESCE(SUM(amount),0) AS amount
             FROM capital_entries
-            WHERE entry_type = 'contribution'
-            GROUP BY entry_type
+            GROUP BY COALESCE(capital_type, entry_type, 'owner_equity')
             ORDER BY amount DESC
         ");
 
         $labels = [
-            'contribution' => 'Capital Contributions',
-            'withdrawal'   => 'Capital Withdrawals',
+            'owner_equity'      => 'Owner Equity',
+            'reinvestment'      => 'Reinvestment',
+            'retained_earnings' => 'Retained Earnings',
+            'loan_capital'      => 'Loan Capital',
+            'grant'             => 'Grant',
+            'other'             => 'Other Capital',
+            'contribution'      => 'Capital Contributions',
+            'withdrawal'        => 'Capital Withdrawals',
         ];
 
         foreach ($rows as $r) {
             $groups[] = [
                 'category'    => 'Capital',
                 'source'      => 'capital_entries',
-                'label'       => $labels[$r['entry_type']] ?? ucfirst($r['entry_type']),
+                'label'       => $labels[$r['cap_type']] ?? ucfirst($r['cap_type']),
                 'records'     => (int)$r['records'],
                 'amount'      => (float)$r['amount'],
                 'note'        => 'Equity — not a liability',
