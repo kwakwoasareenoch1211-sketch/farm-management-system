@@ -16,7 +16,8 @@ $inventoryItems = $inventoryItems ?? [];
         <input type="hidden" name="id" value="<?= (int)$record['id'] ?>">
 
         <div class="row g-3">
-            <div class="col-md-4">
+            <?php include BASE_PATH . 'app/views/layouts/paid_by_edit_selector.php'; ?>
+<div class="col-md-4">
                 <label class="form-label">Farm</label>
                 <select name="farm_id" class="form-select" required>
                     <?php foreach ($farms as $farm): ?>

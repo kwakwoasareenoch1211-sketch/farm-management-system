@@ -89,12 +89,14 @@ class MedicationController extends Controller
         }
 
         $this->view('medication/edit', [
-            'pageTitle' => 'Edit Medication Record',
-            'sidebarType' => 'poultry',
-            'record' => $record,
-            'farms' => $this->farmModel->all(),
-            'batches' => $this->batchModel->all(),
-            'inventoryItems' => $this->inventoryItemModel->all(),
+            'pageTitle'     => 'Edit Medication Record',
+            'sidebarType'   => 'poultry',
+            'record'        => $record,
+            'farms'         => $this->farmModel->all(),
+            'batches'       => $this->batchModel->all(),
+            'inventoryItems'=> $this->inventoryItemModel->all(),
+            'owners'        => (new User())->allOwners(),
+            'currentPaidBy' => $record['paid_by'] ?? null,
         ], 'admin');
     }
 

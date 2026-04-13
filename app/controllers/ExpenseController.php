@@ -105,21 +105,19 @@ class ExpenseController extends Controller
             die('Expense record not found');
         }
 
-        $batches = $this->batchModel->all();
-        $farms = $this->farmModel->all();
-        $categories = $this->expenseCategoryModel->all();
-        $suppliers = $this->supplierModel->all();
-        $users = $this->userModel->all();
+        $owners = $this->userModel->allOwners();
 
         $this->view('expenses/edit', [
-            'pageTitle' => 'Edit Expense',
-            'sidebarType' => 'financial',
-            'record' => $record,
-            'batches' => $batches,
-            'farms' => $farms,
-            'categories' => $categories,
-            'suppliers' => $suppliers,
-            'users' => $users,
+            'pageTitle'     => 'Edit Expense',
+            'sidebarType'   => 'financial',
+            'record'        => $record,
+            'batches'       => $this->batchModel->all(),
+            'farms'         => $this->farmModel->all(),
+            'categories'    => $this->expenseCategoryModel->all(),
+            'suppliers'     => $this->supplierModel->all(),
+            'users'         => $owners,
+            'owners'        => $owners,
+            'currentPaidBy' => $record['paid_by'] ?? null,
         ], 'admin');
     }
 

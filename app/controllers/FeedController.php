@@ -82,6 +82,8 @@ class FeedController extends Controller
             'record'      => $record,
             'farms'       => $this->farmModel->all(),
             'batches'     => $this->batchModel->all(),
+            'owners'      => (new User())->allOwners(),
+            'currentPaidBy' => $record['paid_by'] ?? null,
         ], 'admin');
     }
 

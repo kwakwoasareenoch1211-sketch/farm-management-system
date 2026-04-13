@@ -83,12 +83,14 @@ class VaccinationController extends Controller
         }
 
         $this->view('vaccination/edit', [
-            'pageTitle' => 'Edit Vaccination Record',
-            'sidebarType' => 'poultry',
-            'record' => $record,
-            'farms' => $this->farmModel->all(),
-            'batches' => $this->batchModel->all(),
-            'inventoryItems' => $this->inventoryItemModel->all(),
+            'pageTitle'     => 'Edit Vaccination Record',
+            'sidebarType'   => 'poultry',
+            'record'        => $record,
+            'farms'         => $this->farmModel->all(),
+            'batches'       => $this->batchModel->all(),
+            'inventoryItems'=> $this->inventoryItemModel->all(),
+            'owners'        => (new User())->allOwners(),
+            'currentPaidBy' => $record['paid_by'] ?? null,
         ], 'admin');
     }
 

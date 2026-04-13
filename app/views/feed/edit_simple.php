@@ -18,6 +18,8 @@ $base    = rtrim(BASE_URL, '/');
         <input type="hidden" name="id" value="<?= (int)$record['id'] ?>">
 
         <div class="row g-3">
+            <?php include BASE_PATH . 'app/views/layouts/paid_by_edit_selector.php'; ?>
+
             <div class="col-md-6">
                 <label class="form-label fw-semibold">Farm <span class="text-danger">*</span></label>
                 <select name="farm_id" class="form-select" required>
