@@ -9,11 +9,11 @@ $base               = rtrim(BASE_URL, '/');
 
 $sourceConfig = [
     'manual'             => ['label'=>'Manual Expenses',    'color'=>'#0d6efd','icon'=>'bi-pencil-square'],
-    'livestock_purchase' => ['label'=>'Livestock Purchase', 'color'=>'#6f42c1','icon'=>'bi-egg'],
-    'mortality_loss'     => ['label'=>'Mortality Loss',     'color'=>'#d63384','icon'=>'bi-heartbreak'],
+    'livestock_purchase' => ['label'=>'Livestock Purchase', 'color'=>'#6f42c1','icon'=>'bi-egg-fill'],
     'feed'               => ['label'=>'Feed Costs',         'color'=>'#ffc107','icon'=>'bi-basket'],
     'medication'         => ['label'=>'Medication Costs',   'color'=>'#dc3545','icon'=>'bi-capsule'],
     'vaccination'        => ['label'=>'Vaccination Costs',  'color'=>'#198754','icon'=>'bi-shield-check'],
+    'mortality_loss'     => ['label'=>'Mortality Loss',     'color'=>'#d63384','icon'=>'bi-heartbreak'],
 ];
 ?>
 <style>
@@ -34,10 +34,27 @@ $sourceConfig = [
         <h2 class="fw-bold mb-1">Business Expenses</h2>
         <p class="text-muted mb-0">All business expenses — one entity, tracked by source and category.</p>
     </div>
-    <a href="<?= $base ?>/expenses/create" class="btn btn-dark">
-        <i class="bi bi-plus-circle me-1"></i> Add Expense
-    </a>
+    <div class="d-flex gap-2 flex-wrap">
+        <button onclick="window.print()" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-printer me-1"></i> Print
+        </button>
+        <a href="<?= $base ?>/expenses/export?format=csv" class="btn btn-outline-success btn-sm">
+            <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
+        </a>
+        <a href="<?= $base ?>/expenses/create" class="btn btn-dark btn-sm">
+            <i class="bi bi-plus-circle me-1"></i> Add Expense
+        </a>
+    </div>
 </div>
+
+<style>
+@media print {
+    .btn, .sidebar, .topbar, .source-breakdown, .finance-card:not(#printable) { display: none !important; }
+    #printable { display: block !important; }
+    body { background: white !important; }
+    .main-content { margin: 0 !important; padding: 0 !important; }
+}
+</style>
 
 <!-- SUMMARY STATS -->
 <div class="row g-4 mb-4">

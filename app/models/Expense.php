@@ -8,43 +8,56 @@ class Expense extends Model
     use OwnerHelper;
     public function all(): array
     {
-        // Get all expenses including auto-generated ones from feed, medication, vaccination, and stock receipts
+        $this->db = Database::connect();
         $expenses = [];
 
-        // 1. Manual expenses from expenses table
+        // 1. Manual expenses
         $stmt = $this->db->query("
-            SELECT 
-                'manual' AS expense_source,
-                e.id,
-                e.expense_date AS date,
+            SELECT 'manual' AS expense_source,
+                e.id, e.expense_date AS date,
                 COALESCE(e.description, 'Manual Expense') AS title,
                 e.amount,
                 COALESCE(ec.category_name, 'Uncategorized') AS category_name,
-                e.payment_method,
-                e.payment_status,
-                e.amount_paid,
-                e.liability_id,
-                e.expense_reference,
-                e.notes,
-                e.created_at
+                e.payment_method, e.payment_status, e.amount_paid,
+                e.liability_id, e.expense_reference, e.notes, e.created_at
             FROM expenses e
             LEFT JOIN expense_categories ec ON ec.id = e.category_id
             ORDER BY e.expense_date DESC, e.id DESC
         ");
         $expenses = array_merge($expenses, $stmt->fetchAll(PDO::FETCH_ASSOC) ?: []);
 
-        // 2. Feed expenses (only where unit_cost is set and > 0)
+        // 2. Livestock/Chick purchases from batches (initial_quantity * initial_unit_cost)
         $stmt = $this->db->query("
-            SELECT 
-                'feed' AS expense_source,
-                fr.id,
-                fr.record_date AS date,
+            SELECT 'livestock_purchase' AS expense_source,
+                ab.id,
+                COALESCE(ab.purchase_date, ab.start_date) AS date,
+                CONCAT('Livestock Purchase: ', ab.batch_code,
+                    CASE WHEN ab.batch_name IS NOT NULL THEN CONCAT(' - ', ab.batch_name) ELSE '' END,
+                    ' (', ab.initial_quantity, ' birds @ GHS ', ab.initial_unit_cost, ')') AS title,
+                COALESCE(ab.initial_quantity * ab.initial_unit_cost, 0) AS amount,
+                'Livestock Purchase' AS category_name,
+                'cash' AS payment_method,
+                'paid' AS payment_status,
+                COALESCE(ab.initial_quantity * ab.initial_unit_cost, 0) AS amount_paid,
+                NULL AS liability_id, NULL AS expense_reference,
+                ab.notes, ab.created_at
+            FROM animal_batches ab
+            WHERE ab.initial_unit_cost > 0 AND ab.initial_quantity > 0
+            ORDER BY COALESCE(ab.purchase_date, ab.start_date) DESC, ab.id DESC
+        ");
+        $expenses = array_merge($expenses, $stmt->fetchAll(PDO::FETCH_ASSOC) ?: []);
+
+        // 3. Feed expenses
+        $stmt = $this->db->query("
+            SELECT 'feed' AS expense_source,
+                fr.id, fr.record_date AS date,
                 CONCAT('Feed: ', COALESCE(fr.feed_name, 'Unknown'), ' - Batch: ', COALESCE(ab.batch_name, ab.batch_code, 'N/A')) AS title,
                 COALESCE(fr.quantity_kg * fr.unit_cost, 0) AS amount,
-                'Feed' AS category_name,
-                'cash' AS payment_method,
-                fr.notes,
-                fr.created_at
+                'Feed' AS category_name, 'cash' AS payment_method,
+                'paid' AS payment_status,
+                COALESCE(fr.quantity_kg * fr.unit_cost, 0) AS amount_paid,
+                NULL AS liability_id, NULL AS expense_reference,
+                fr.notes, fr.created_at
             FROM feed_records fr
             LEFT JOIN animal_batches ab ON ab.id = fr.batch_id
             WHERE fr.unit_cost IS NOT NULL AND fr.unit_cost > 0
@@ -52,37 +65,35 @@ class Expense extends Model
         ");
         $expenses = array_merge($expenses, $stmt->fetchAll(PDO::FETCH_ASSOC) ?: []);
 
-        // 3. Medication expenses (only where unit_cost is set and > 0)
+        // 4. Medication expenses
         $stmt = $this->db->query("
-            SELECT 
-                'medication' AS expense_source,
-                mr.id,
-                mr.record_date AS date,
+            SELECT 'medication' AS expense_source,
+                mr.id, mr.record_date AS date,
                 CONCAT('Medication: ', COALESCE(mr.medication_name, 'Unknown'), ' - Batch: ', COALESCE(ab.batch_name, ab.batch_code, 'N/A')) AS title,
                 COALESCE(mr.quantity_used * mr.unit_cost, 0) AS amount,
-                'Medication' AS category_name,
-                'cash' AS payment_method,
-                mr.notes,
-                mr.created_at
+                'Medication' AS category_name, 'cash' AS payment_method,
+                'paid' AS payment_status,
+                COALESCE(mr.quantity_used * mr.unit_cost, 0) AS amount_paid,
+                NULL AS liability_id, NULL AS expense_reference,
+                mr.notes, mr.created_at
             FROM medication_records mr
             LEFT JOIN animal_batches ab ON ab.id = mr.batch_id
-            WHERE mr.unit_cost IS NOT NULL AND mr.unit_cost > 0 AND mr.quantity_used IS NOT NULL AND mr.quantity_used > 0
+            WHERE mr.unit_cost IS NOT NULL AND mr.unit_cost > 0 AND mr.quantity_used > 0
             ORDER BY mr.record_date DESC, mr.id DESC
         ");
         $expenses = array_merge($expenses, $stmt->fetchAll(PDO::FETCH_ASSOC) ?: []);
 
-        // 4. Vaccination expenses (only where cost_amount is set and > 0)
+        // 5. Vaccination expenses
         $stmt = $this->db->query("
-            SELECT 
-                'vaccination' AS expense_source,
-                vr.id,
-                vr.record_date AS date,
+            SELECT 'vaccination' AS expense_source,
+                vr.id, vr.record_date AS date,
                 CONCAT('Vaccination: ', COALESCE(vr.vaccine_name, 'Unknown'), ' - Batch: ', COALESCE(ab.batch_name, ab.batch_code, 'N/A')) AS title,
                 COALESCE(vr.cost_amount, 0) AS amount,
-                'Vaccination' AS category_name,
-                'cash' AS payment_method,
-                vr.notes,
-                vr.created_at
+                'Vaccination' AS category_name, 'cash' AS payment_method,
+                'paid' AS payment_status,
+                COALESCE(vr.cost_amount, 0) AS amount_paid,
+                NULL AS liability_id, NULL AS expense_reference,
+                vr.notes, vr.created_at
             FROM vaccination_records vr
             LEFT JOIN animal_batches ab ON ab.id = vr.batch_id
             WHERE vr.cost_amount IS NOT NULL AND vr.cost_amount > 0
@@ -90,17 +101,8 @@ class Expense extends Model
         ");
         $expenses = array_merge($expenses, $stmt->fetchAll(PDO::FETCH_ASSOC) ?: []);
 
-        // Note: Stock receipts removed - inventory tracking unified with feed/medication systems
-
-        // Sort all expenses by date descending
-        usort($expenses, function($a, $b) {
-            $dateCompare = strtotime($b['date']) - strtotime($a['date']);
-            if ($dateCompare === 0) {
-                // If dates are equal, sort by ID descending
-                return (int)$b['id'] - (int)$a['id'];
-            }
-            return $dateCompare;
-        });
+        // Sort all by date descending
+        usort($expenses, fn($a, $b) => strtotime($b['date']) - strtotime($a['date']));
 
         return $expenses;
     }

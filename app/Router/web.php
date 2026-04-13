@@ -80,6 +80,7 @@ return [
     'expenses/edit' => ['ExpenseController', 'edit'],
     'expenses/update' => ['ExpenseController', 'update'],
     'expenses/delete' => ['ExpenseController', 'delete'],
+    'expenses/export' => ['ExpenseController', 'export'],
     'business-health' => ['EconomicController', 'businessHealth'],
     'going-concern' => ['EconomicController', 'goingConcern'],
     'decision-support' => ['EconomicController', 'decisionSupport'],

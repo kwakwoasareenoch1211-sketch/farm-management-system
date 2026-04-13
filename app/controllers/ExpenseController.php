@@ -148,4 +148,48 @@ class ExpenseController extends Controller
         header('Location: ' . rtrim(BASE_URL, '/') . '/expenses');
         exit;
     }
+
+    public function export(): void
+    {
+        $records = $this->expenseModel->all();
+        $format  = $_GET['format'] ?? 'csv';
+
+        $filename = 'business-expenses-' . date('Y-m-d');
+
+        if ($format === 'csv') {
+            header('Content-Type: text/csv');
+            header('Content-Disposition: attachment; filename="' . $filename . '.csv"');
+            header('Pragma: no-cache');
+
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['Date', 'Description', 'Source', 'Category', 'Amount (GHS)', 'Status']);
+
+            $sourceLabels = [
+                'manual'             => 'Manual Expense',
+                'livestock_purchase' => 'Livestock Purchase',
+                'feed'               => 'Feed',
+                'medication'         => 'Medication',
+                'vaccination'        => 'Vaccination',
+                'mortality_loss'     => 'Mortality Loss',
+            ];
+
+            foreach ($records as $r) {
+                fputcsv($out, [
+                    $r['date'] ?? '',
+                    $r['title'] ?? '',
+                    $sourceLabels[$r['expense_source'] ?? 'manual'] ?? ucfirst($r['expense_source'] ?? ''),
+                    $r['category_name'] ?? 'Uncategorized',
+                    number_format((float)($r['amount'] ?? 0), 2),
+                    $r['payment_status'] ?? 'paid',
+                ]);
+            }
+
+            // Totals row
+            $total = array_sum(array_column($records, 'amount'));
+            fputcsv($out, ['', '', '', 'TOTAL', number_format($total, 2), '']);
+
+            fclose($out);
+            exit;
+        }
+    }
 }
