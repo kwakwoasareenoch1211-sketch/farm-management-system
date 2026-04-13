@@ -1,4 +1,9 @@
 <?php
+$printTitle    = 'Forecast Report';
+$printSubtitle = 'Generated: ' . date('d M Y H:i') . ' | Poultry Farm Management System';
+$exportUrl     = null;
+include BASE_PATH . 'app/views/layouts/print_toolbar.php';
+?><?php
 $monthlyCombined = $monthlyCombined ?? [];
 $forecastMonths  = $forecastMonths  ?? [];
 $avgRevenue      = (float)($avgRevenue ?? 0);

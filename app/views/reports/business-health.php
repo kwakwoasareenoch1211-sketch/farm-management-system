@@ -1,4 +1,9 @@
 <?php
+$printTitle    = 'Business Health Report';
+$printSubtitle = 'Generated: ' . date('d M Y H:i') . ' | Poultry Farm Management System';
+$exportUrl     = null;
+include BASE_PATH . 'app/views/layouts/print_toolbar.php';
+?><?php
 $mt  = $monitorTotals ?? [];
 $totalRevenue     = (float)($mt['total_revenue'] ?? 0);
 $totalExpenses    = (float)($mt['total_expenses'] ?? 0);

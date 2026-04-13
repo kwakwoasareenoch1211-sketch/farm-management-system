@@ -1,4 +1,9 @@
 <?php
+$printTitle    = 'Farm Management Reports Dashboard';
+$printSubtitle = 'Generated: ' . date('d M Y H:i') . ' | Poultry Farm Management System';
+$exportUrl     = null;
+include BASE_PATH . 'app/views/layouts/print_toolbar.php';
+
 $totals = $totals ?? [];
 $monthlyRevenueVsExpense = $monthlyRevenueVsExpense ?? [];
 $recentActivities = $recentActivities ?? [];
@@ -26,10 +31,57 @@ $totalFeedCost = (float)($totals['total_feed_cost'] ?? 0);
             <h2 class="fw-bold mb-1">Reports Dashboard</h2>
             <p class="text-muted mb-0">Intelligent reporting center for farm decisions.</p>
         </div>
-        <div class="d-flex gap-2 flex-wrap">
+        <div class="d-flex gap-2 flex-wrap d-print-none">
             <a href="<?= rtrim(BASE_URL, '/') ?>/reports/batch-performance" class="btn btn-dark">Batch Performance</a>
             <a href="<?= rtrim(BASE_URL, '/') ?>/reports/feed" class="btn btn-outline-secondary">Feed Report</a>
             <a href="<?= rtrim(BASE_URL, '/') ?>/reports/profit-loss" class="btn btn-outline-secondary">Profit &amp; Loss</a>
+        </div>
+    </div>
+
+    <!-- QUICK EXPORT / PRINT ALL REPORTS -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 d-print-none">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-3"><i class="bi bi-download text-primary me-2"></i>Quick Access — Print or Export Any Report</h5>
+            <div class="row g-2">
+                <?php
+                $reportLinks = [
+                    ['label'=>'Batch Performance',    'url'=>'reports/batch-performance',    'icon'=>'bi-clipboard-data',    'color'=>'#3b82f6'],
+                    ['label'=>'Feed Report',           'url'=>'reports/feed',                 'icon'=>'bi-basket',            'color'=>'#f59e0b'],
+                    ['label'=>'Mortality Report',      'url'=>'reports/mortality',            'icon'=>'bi-heart-pulse',       'color'=>'#d63384'],
+                    ['label'=>'Vaccination Report',    'url'=>'reports/vaccination',          'icon'=>'bi-shield-check',      'color'=>'#22c55e'],
+                    ['label'=>'Medication Report',     'url'=>'reports/medication',           'icon'=>'bi-capsule',           'color'=>'#ef4444'],
+                    ['label'=>'Weight Report',         'url'=>'reports/weight',               'icon'=>'bi-speedometer2',      'color'=>'#8b5cf6'],
+                    ['label'=>'Egg Production',        'url'=>'reports/egg-production',       'icon'=>'bi-egg-fried',         'color'=>'#f97316'],
+                    ['label'=>'Sales Report',          'url'=>'reports/sales',                'icon'=>'bi-cart3',             'color'=>'#10b981'],
+                    ['label'=>'Expense Report',        'url'=>'reports/expenses',             'icon'=>'bi-wallet2',           'color'=>'#0d6efd'],
+                    ['label'=>'Profit & Loss',         'url'=>'reports/profit-loss',          'icon'=>'bi-graph-up',          'color'=>'#16a34a'],
+                    ['label'=>'Forecast',              'url'=>'reports/forecast',             'icon'=>'bi-graph-up-arrow',    'color'=>'#7c3aed'],
+                    ['label'=>'Business Health',       'url'=>'reports/business-health',      'icon'=>'bi-heart',             'color'=>'#dc2626'],
+                    ['label'=>'Stock Position',        'url'=>'reports/stock-position',       'icon'=>'bi-boxes',             'color'=>'#64748b'],
+                    ['label'=>'Stock Movement',        'url'=>'reports/stock-movement',       'icon'=>'bi-arrow-left-right',  'color'=>'#0891b2'],
+                    ['label'=>'Low Stock',             'url'=>'reports/low-stock',            'icon'=>'bi-exclamation-triangle','color'=>'#ea580c'],
+                    ['label'=>'Decisions',             'url'=>'reports/decisions',            'icon'=>'bi-lightbulb',         'color'=>'#ca8a04'],
+                    ['label'=>'Custom Report',         'url'=>'reports/custom',               'icon'=>'bi-file-earmark-text', 'color'=>'#475569'],
+                    ['label'=>'Export Center',         'url'=>'reports/export',               'icon'=>'bi-download',          'color'=>'#1d4ed8'],
+                ];
+                $base = rtrim(BASE_URL, '/');
+                foreach ($reportLinks as $rl):
+                ?>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <a href="<?= $base ?>/<?= $rl['url'] ?>" class="d-block text-decoration-none p-2 rounded-3 text-center"
+                       style="border:1px solid #e2e8f0;background:#fff;transition:all .15s;"
+                       onmouseover="this.style.borderColor='<?= $rl['color'] ?>';this.style.background='<?= $rl['color'] ?>10'"
+                       onmouseout="this.style.borderColor='#e2e8f0';this.style.background='#fff'">
+                        <i class="bi <?= $rl['icon'] ?>" style="font-size:1.5rem;color:<?= $rl['color'] ?>;display:block;margin-bottom:4px;"></i>
+                        <div style="font-size:11px;font-weight:600;color:#374151;"><?= $rl['label'] ?></div>
+                    </a>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <div class="mt-3 pt-3 border-top d-flex gap-2 align-items-center">
+                <i class="bi bi-info-circle text-muted"></i>
+                <span class="text-muted small">Each report page has its own <strong>Print</strong> and <strong>Export CSV</strong> buttons for saving or sharing.</span>
+            </div>
         </div>
     </div>
 

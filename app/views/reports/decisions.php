@@ -1,4 +1,9 @@
-﻿<?php
+<?php
+$printTitle    = 'Decision Recommendations Report';
+$printSubtitle = 'Generated: ' . date('d M Y H:i') . ' | Poultry Farm Management System';
+$exportUrl     = null;
+include BASE_PATH . 'app/views/layouts/print_toolbar.php';
+?><?php
 $decisions    = $decisions    ?? [];
 $mt           = $monitorTotals ?? [];
 $currentMonth = $currentMonth  ?? [];

@@ -1,4 +1,9 @@
 <?php
+$printTitle    = 'Low Stock Report';
+$printSubtitle = 'Generated: ' . date('d M Y H:i') . ' | Poultry Farm Management System';
+$exportUrl     = null;
+include BASE_PATH . 'app/views/layouts/print_toolbar.php';
+?><?php
 $reportRows = $reportRows ?? [];
 $totalLow = count($reportRows);
 ?>

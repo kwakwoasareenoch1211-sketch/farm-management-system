@@ -1,4 +1,9 @@
-<?php $reportRows = $reportRows ?? []; ?>
+<?php
+$printTitle    = 'Batch Performance Report';
+$printSubtitle = 'Generated: ' . date('d M Y H:i') . ' | Poultry Farm Management System';
+$exportUrl     = null;
+include BASE_PATH . 'app/views/layouts/print_toolbar.php';
+?><?php $reportRows = $reportRows ?? []; ?>
 
 <div class="container py-4">
     <h2 class="fw-bold mb-1">Batch Performance Report</h2>

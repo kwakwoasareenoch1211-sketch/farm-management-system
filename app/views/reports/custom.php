@@ -1,4 +1,9 @@
 <?php
+$printTitle    = 'Custom Report';
+$printSubtitle = 'Generated: ' . date('d M Y H:i') . ' | Poultry Farm Management System';
+$exportUrl     = null;
+include BASE_PATH . 'app/views/layouts/print_toolbar.php';
+?><?php
 $financeTotals    = $financeTotals    ?? [];
 $monthlyCombined  = $monthlyCombined  ?? [];
 $salesTotals      = $salesTotals      ?? [];
