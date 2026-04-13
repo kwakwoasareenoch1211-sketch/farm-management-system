@@ -35,6 +35,11 @@ $debtStatusMap = [
     'unknown'    => ['label'=>'No Data',      'class'=>'secondary'],
 ];
 $ds = $debtStatusMap[$debtStatus] ?? $debtStatusMap['unknown'];
+
+$printTitle    = 'Sales Report';
+$printSubtitle = 'Generated: ' . date('d M Y H:i');
+$exportUrl     = null;
+include BASE_PATH . 'app/views/layouts/print_toolbar.php';
 ?>
 <style>
 .si-card{border-radius:20px;background:#fff;border:0;box-shadow:0 8px 28px rgba(15,23,42,.07);}
@@ -58,7 +63,7 @@ $ds = $debtStatusMap[$debtStatus] ?? $debtStatusMap['unknown'];
 </style>
 
 <!-- Header -->
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 d-print-none">
     <div>
         <span class="badge rounded-pill text-bg-primary mb-2 px-3 py-2">Sales Intelligence Center</span>
         <h2 class="fw-bold mb-1">Sales Dashboard</h2>

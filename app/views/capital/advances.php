@@ -3,13 +3,18 @@ $base = rtrim(BASE_URL, '/');
 $advances = $advances ?? [];
 $ownerSummary = $ownerSummary ?? [];
 $ownerColors = ['#3b82f6','#f59e0b','#10b981','#ef4444','#8b5cf6'];
+
+$printTitle    = 'Owner Advances Report';
+$printSubtitle = 'Generated: ' . date('d M Y H:i');
+$exportUrl     = null;
+include BASE_PATH . 'app/views/layouts/print_toolbar.php';
 ?>
 <style>
 .adv-card{border-radius:18px;background:#fff;border:0;box-shadow:0 6px 24px rgba(15,23,42,.07);}
 .adv-kpi{border-radius:16px;padding:18px;background:#fff;border:1px solid #eef2f7;height:100%;}
 </style>
 
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 d-print-none">
     <div>
         <span class="badge rounded-pill text-bg-warning mb-2 px-3 py-2">Financial Tracking</span>
         <h2 class="fw-bold mb-1">Owner Personal Advances</h2>

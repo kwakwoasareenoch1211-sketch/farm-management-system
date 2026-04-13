@@ -7,6 +7,11 @@ require BASE_PATH . 'app/views/partials/poultry-page-top.php';
 $totalRecords = (float)($totals['total_records'] ?? 0);
 $overdueCount = (float)($totals['overdue_count'] ?? 0);
 $dueSoonCount = (float)($totals['due_soon_count'] ?? 0);
+
+$printTitle    = 'Vaccination Records Report';
+$printSubtitle = 'Generated: ' . date('d M Y H:i');
+$exportUrl     = null;
+include BASE_PATH . 'app/views/layouts/print_toolbar.php';
 ?>
 
 <div class="row g-4 mb-4">

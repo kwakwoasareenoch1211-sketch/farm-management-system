@@ -1,7 +1,14 @@
-<?php $batches = $batches ?? []; ?>
+<?php
+$batches = $batches ?? [];
+
+$printTitle    = 'Batch Management Report';
+$printSubtitle = 'Generated: ' . date('d M Y H:i');
+$exportUrl     = null;
+include BASE_PATH . 'app/views/layouts/print_toolbar.php';
+?>
 
 <div class="container py-4">
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 d-print-none">
         <div>
             <h2 class="fw-bold mb-1">Animal Batches</h2>
             <p class="text-muted mb-0">Manage poultry batches, track performance, and review batch health.</p>

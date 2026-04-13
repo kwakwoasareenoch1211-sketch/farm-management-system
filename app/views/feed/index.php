@@ -6,9 +6,14 @@ $base    = rtrim(BASE_URL, '/');
 $totalRecords  = (int)($totals['total_records']   ?? 0);
 $totalFeedKg   = (float)($totals['total_feed_kg'] ?? 0);
 $totalFeedCost = (float)($totals['total_feed_cost']?? 0);
+
+$printTitle    = 'Feed Records Report';
+$printSubtitle = 'Generated: ' . date('d M Y H:i');
+$exportUrl     = null;
+include BASE_PATH . 'app/views/layouts/print_toolbar.php';
 ?>
 
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 d-print-none">
     <div>
         <h2 class="fw-bold mb-1">Feed Management</h2>
         <p class="text-muted mb-0">Record and track feed usage for your batches</p>

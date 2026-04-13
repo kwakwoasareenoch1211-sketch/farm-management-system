@@ -47,6 +47,11 @@ $typeLabels = [
 $ownerColors = ['#3b82f6','#f59e0b','#10b981','#ef4444','#8b5cf6'];
 
 $totalCapital = (float)($totals['total_capital'] ?? 0);
+
+$printTitle    = 'Capital Management Report';
+$printSubtitle = 'Generated: ' . date('d M Y H:i');
+$exportUrl     = null;
+include BASE_PATH . 'app/views/layouts/print_toolbar.php';
 ?>
 
 <style>
@@ -59,7 +64,7 @@ $totalCapital = (float)($totals['total_capital'] ?? 0);
 </style>
 
 <!-- Header -->
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 d-print-none">
     <div>
         <span class="badge rounded-pill text-bg-primary mb-2 px-3 py-2">Financial Management</span>
         <h2 class="fw-bold mb-1">Capital Management</h2>

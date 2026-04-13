@@ -7,6 +7,11 @@ require BASE_PATH . 'app/views/partials/poultry-page-top.php';
 $totalRecords = (float)($totals['total_records'] ?? 0);
 $totalMortality = (float)($totals['total_mortality'] ?? 0);
 $totalBatches = (float)($totals['total_batches'] ?? 0);
+
+$printTitle    = 'Mortality Records Report';
+$printSubtitle = 'Generated: ' . date('d M Y H:i');
+$exportUrl     = null;
+include BASE_PATH . 'app/views/layouts/print_toolbar.php';
 ?>
 
 <!-- Losses Link Alert -->

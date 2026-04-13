@@ -5,6 +5,11 @@ $paidLiabilities = (int)($totals['paid_liabilities'] ?? 0);
 $totalPrincipal = (float)($totals['total_principal'] ?? 0);
 $totalOutstanding = (float)($totals['total_outstanding'] ?? 0);
 $activeOutstanding = (float)($totals['active_outstanding'] ?? 0);
+
+$printTitle    = 'Liabilities Report';
+$printSubtitle = 'Generated: ' . date('d M Y H:i');
+$exportUrl     = null;
+include BASE_PATH . 'app/views/layouts/print_toolbar.php';
 ?>
 
 <style>
@@ -71,7 +76,7 @@ $activeOutstanding = (float)($totals['active_outstanding'] ?? 0);
     }
 </style>
 
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 d-print-none">
     <div>
         <span class="badge rounded-pill text-bg-dark mb-2 px-3 py-2">Financial Management</span>
         <h2 class="fw-bold mb-1">Liabilities Management</h2>
