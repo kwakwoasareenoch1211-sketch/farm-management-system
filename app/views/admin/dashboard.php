@@ -421,6 +421,7 @@ $strongBatches         = $strongBatches ?? [];
 </div>
 
 <!-- ── Recent Activities + Strong/Loss Batches ── -->
+<?php include BASE_PATH . 'app/views/partials/dashboard_charts.php'; ?>
 <div class="row g-4 mb-4">
     <div class="col-lg-8">
         <div class="admin-card p-4 h-100">

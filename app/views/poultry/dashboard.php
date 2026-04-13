@@ -312,6 +312,120 @@ if (!empty($ownerStats)):
     </div>
 </div>
 
+<!-- Poultry Charts -->
+<div class="row g-4 mb-4">
+    <!-- Mortality Trend -->
+    <div class="col-lg-6">
+        <div class="pou-card p-4 h-100">
+            <h6 class="fw-bold mb-3"><i class="bi bi-heart-pulse text-danger me-2"></i>Mortality Trend (Last 6 Months)</h6>
+            <canvas id="mortalityTrendChart" height="200"></canvas>
+        </div>
+    </div>
+    <!-- Egg Production Trend -->
+    <div class="col-lg-6">
+        <div class="pou-card p-4 h-100">
+            <h6 class="fw-bold mb-3"><i class="bi bi-egg-fried text-warning me-2"></i>Egg Production Trend (Last 6 Months)</h6>
+            <canvas id="eggTrendChart" height="200"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Feed Cost Trend -->
+    <div class="col-lg-6">
+        <div class="pou-card p-4 h-100">
+            <h6 class="fw-bold mb-3"><i class="bi bi-basket2 text-warning me-2"></i>Feed Cost Trend (Last 6 Months)</h6>
+            <canvas id="feedCostChart" height="200"></canvas>
+        </div>
+    </div>
+    <!-- Batch Status Donut -->
+    <div class="col-lg-6">
+        <div class="pou-card p-4 h-100">
+            <h6 class="fw-bold mb-3"><i class="bi bi-collection text-primary me-2"></i>Batch Status Distribution</h6>
+            <canvas id="batchStatusChart" height="200"></canvas>
+        </div>
+    </div>
+</div>
+
+<?php
+// Fetch chart data directly
+$db = Database::connect();
+
+// Mortality by month
+$mortMonths = []; $mortData = [];
+try {
+    $rows = $db->query("
+        SELECT DATE_FORMAT(record_date,'%b %Y') AS m, SUM(quantity) AS total
+        FROM mortality_records
+        WHERE record_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+        GROUP BY DATE_FORMAT(record_date,'%Y-%m') ORDER BY DATE_FORMAT(record_date,'%Y-%m')
+    ")->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    $mortMonths = array_column($rows, 'm');
+    $mortData   = array_map(fn($r) => (float)$r['total'], $rows);
+} catch (\Throwable $e) {}
+
+// Egg production by month
+$eggMonths = []; $eggData = [];
+try {
+    $rows = $db->query("
+        SELECT DATE_FORMAT(record_date,'%b %Y') AS m, SUM(quantity) AS total
+        FROM egg_production_records
+        WHERE record_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+        GROUP BY DATE_FORMAT(record_date,'%Y-%m') ORDER BY DATE_FORMAT(record_date,'%Y-%m')
+    ")->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    $eggMonths = array_column($rows, 'm');
+    $eggData   = array_map(fn($r) => (float)$r['total'], $rows);
+} catch (\Throwable $e) {}
+
+// Feed cost by month
+$feedMonths = []; $feedCostData = [];
+try {
+    $rows = $db->query("
+        SELECT DATE_FORMAT(record_date,'%b %Y') AS m, SUM(quantity_kg * unit_cost) AS total
+        FROM feed_records WHERE unit_cost > 0
+        AND record_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+        GROUP BY DATE_FORMAT(record_date,'%Y-%m') ORDER BY DATE_FORMAT(record_date,'%Y-%m')
+    ")->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    $feedMonths   = array_column($rows, 'm');
+    $feedCostData = array_map(fn($r) => (float)$r['total'], $rows);
+} catch (\Throwable $e) {}
+
+// Batch status
+$batchStatuses = []; $batchCounts = [];
+try {
+    $rows = $db->query("SELECT status, COUNT(*) AS cnt FROM animal_batches GROUP BY status")->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    $batchStatuses = array_column($rows, 'status');
+    $batchCounts   = array_map(fn($r) => (int)$r['cnt'], $rows);
+} catch (\Throwable $e) {}
+?>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function(){
+    const chartDefaults = { responsive: true, plugins: { legend: { position: 'top' } } };
+
+    // Mortality Trend
+    const mc = document.getElementById('mortalityTrendChart');
+    if (mc) new Chart(mc, { type:'bar', data:{ labels:<?= json_encode($mortMonths) ?>, datasets:[{ label:'Deaths', data:<?= json_encode($mortData) ?>, backgroundColor:'#ef444480', borderColor:'#ef4444', borderWidth:2 }] }, options:{...chartDefaults, scales:{y:{beginAtZero:true}}} });
+
+    // Egg Production Trend
+    const ec = document.getElementById('eggTrendChart');
+    if (ec) new Chart(ec, { type:'line', data:{ labels:<?= json_encode($eggMonths) ?>, datasets:[{ label:'Eggs', data:<?= json_encode($eggData) ?>, borderColor:'#f59e0b', backgroundColor:'#f59e0b20', fill:true, tension:0.4 }] }, options:{...chartDefaults, scales:{y:{beginAtZero:true}}} });
+
+    // Feed Cost Trend
+    const fc = document.getElementById('feedCostChart');
+    if (fc) new Chart(fc, { type:'bar', data:{ labels:<?= json_encode($feedMonths) ?>, datasets:[{ label:'Feed Cost (GHS)', data:<?= json_encode($feedCostData) ?>, backgroundColor:'#3b82f680', borderColor:'#3b82f6', borderWidth:2 }] }, options:{...chartDefaults, scales:{y:{beginAtZero:true, ticks:{callback:v=>'GHS '+v.toLocaleString()}}}} });
+
+    // Batch Status Donut
+    const bc = document.getElementById('batchStatusChart');
+    if (bc) {
+        const statuses = <?= json_encode($batchStatuses) ?>;
+        const counts   = <?= json_encode($batchCounts) ?>;
+        const colors   = {'active':'#22c55e','planned':'#3b82f6','completed':'#f59e0b','sold':'#8b5cf6','closed':'#64748b'};
+        new Chart(bc, { type:'doughnut', data:{ labels:statuses, datasets:[{ data:counts, backgroundColor:statuses.map(s=>colors[s]||'#94a3b8'), borderWidth:2 }] }, options:{...chartDefaults, plugins:{legend:{position:'bottom'}}} });
+    }
+})();
+</script>
+
 <!-- Quick Actions -->
 <div class="pou-card p-4 mb-4">
     <h6 class="fw-bold mb-3"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>Quick Operations</h6>

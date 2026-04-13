@@ -633,3 +633,77 @@ $invTypeLabels = ['equipment'=>'Equipment','infrastructure'=>'Infrastructure','l
         </table>
     </div>
 </div>
+
+<?php
+// Financial Charts - appended
+$db2 = Database::connect();
+$finChartLabels = []; $finRevData = []; $finExpData = [];
+try {
+    $rows = $db2->query("
+        SELECT DATE_FORMAT(m,'%b %Y') AS lbl,
+               COALESCE(SUM(rev),0) AS rev, COALESCE(SUM(exp),0) AS exp
+        FROM (
+            SELECT DATE_FORMAT(sale_date,'%Y-%m-01') AS m, total_amount AS rev, 0 AS exp FROM sales
+            UNION ALL
+            SELECT DATE_FORMAT(expense_date,'%Y-%m-01'), 0, amount FROM expenses
+        ) t
+        WHERE m >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+        GROUP BY m ORDER BY m
+    ")->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    $finChartLabels = array_column($rows, 'lbl');
+    $finRevData     = array_map(fn($r) => (float)$r['rev'], $rows);
+    $finExpData     = array_map(fn($r) => (float)$r['exp'], $rows);
+} catch (\Throwable $e) {}
+?>
+<?php if (!empty($finChartLabels)): ?>
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="fin-card p-4">
+            <h6 class="fw-bold mb-3"><i class="bi bi-graph-up text-success me-2"></i>Revenue vs Expenses (12 Months)</h6>
+            <canvas id="finRevExpChart" height="180"></canvas>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="fin-card p-4 h-100">
+            <h6 class="fw-bold mb-3"><i class="bi bi-pie-chart text-primary me-2"></i>Expense Breakdown</h6>
+            <canvas id="finExpDonut" height="220"></canvas>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function(){
+    const lbl = <?= json_encode($finChartLabels) ?>;
+    const rev = <?= json_encode($finRevData) ?>;
+    const exp = <?= json_encode($finExpData) ?>;
+    const net = rev.map((r,i) => r - exp[i]);
+
+    const c1 = document.getElementById('finRevExpChart');
+    if (c1) new Chart(c1, {
+        type:'line',
+        data:{ labels:lbl, datasets:[
+            {label:'Revenue', data:rev, borderColor:'#22c55e', backgroundColor:'#22c55e15', fill:true, tension:0.4},
+            {label:'Expenses', data:exp, borderColor:'#ef4444', backgroundColor:'#ef444415', fill:true, tension:0.4},
+            {label:'Net', data:net, borderColor:'#3b82f6', borderDash:[5,5], tension:0.4}
+        ]},
+        options:{responsive:true, plugins:{legend:{position:'top'}}, scales:{y:{ticks:{callback:v=>'GHS '+v.toLocaleString()}}}}
+    });
+
+    const c2 = document.getElementById('finExpDonut');
+    if (c2) {
+        const feed = <?= (float)($financeTotals['by_source']['feed']['total'] ?? 0) ?>;
+        const med  = <?= (float)($financeTotals['by_source']['medication']['total'] ?? 0) ?>;
+        const vac  = <?= (float)($financeTotals['by_source']['vaccination']['total'] ?? 0) ?>;
+        const dir  = <?= (float)($financeTotals['by_source']['manual']['total'] ?? 0) ?>;
+        const bird = <?= (float)($financeTotals['by_source']['livestock_purchase']['total'] ?? 0) ?>;
+        const vals = [feed, med, vac, dir, bird].filter(v=>v>0);
+        const lbls = ['Feed','Medication','Vaccination','Direct','Livestock'].filter((_,i)=>[feed,med,vac,dir,bird][i]>0);
+        if (vals.length) new Chart(c2, {
+            type:'doughnut',
+            data:{labels:lbls, datasets:[{data:vals, backgroundColor:['#f59e0b','#ef4444','#22c55e','#3b82f6','#8b5cf6'], borderWidth:2}]},
+            options:{responsive:true, plugins:{legend:{position:'bottom', labels:{font:{size:11}}}}}
+        });
+    }
+})();
+</script>
+<?php endif; ?>
