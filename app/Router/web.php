@@ -7,6 +7,7 @@ return [
     'admin' => ['AdminController', 'dashboard'],
     'poultry' => ['PoultryController', 'dashboard'],
     'financial' => ['FinancialController', 'dashboard'],
+    'financial/traceability' => ['FinancialController', 'traceability'],
     'economic' => ['EconomicController', 'dashboard'],
     'inventory' => ['InventoryController', 'dashboard'],
     'reports' => ['ReportsController', 'dashboard'],
