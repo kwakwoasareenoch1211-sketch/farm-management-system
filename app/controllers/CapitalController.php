@@ -136,4 +136,91 @@ class CapitalController extends Controller
         header('Location: ' . rtrim(BASE_URL, '/') . '/capital/advances');
         exit;
     }
+
+    public function editAdvance(): void
+    {
+        $id = (int)($_GET['id'] ?? 0);
+        $db = \Database::connect();
+
+        // id=0 means create new advance manually
+        if ($id === 0) {
+            $advance = [
+                'id' => 0, 'owner_id' => null, 'advance_date' => date('Y-m-d'),
+                'amount' => '', 'repaid_amount' => 0, 'description' => '',
+                'notes' => '', 'status' => 'outstanding',
+            ];
+        } else {
+            $stmt = $db->prepare("SELECT oa.*, u.full_name FROM owner_advances oa LEFT JOIN users u ON u.id=oa.owner_id WHERE oa.id=? LIMIT 1");
+            $stmt->execute([$id]);
+            $advance = $stmt->fetch(\PDO::FETCH_ASSOC);
+            if (!$advance) {
+                header('Location: ' . rtrim(BASE_URL, '/') . '/capital/advances');
+                exit;
+            }
+        }
+
+        $this->view('capital/edit-advance', [
+            'pageTitle'   => $id === 0 ? 'Add Manual Advance' : 'Edit Advance',
+            'sidebarType' => 'financial',
+            'advance'     => $advance,
+            'owners'      => $this->userModel->allOwners(),
+        ], 'admin');
+    }
+
+    public function updateAdvance(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = (int)($_POST['id'] ?? 0);
+            $db = \Database::connect();
+            $repaid = (float)($_POST['repaid_amount'] ?? 0);
+            $amount = (float)($_POST['amount'] ?? 0);
+            $status = $repaid >= $amount ? 'repaid' : ($repaid > 0 ? 'partial' : 'outstanding');
+
+            if ($id === 0) {
+                // Create new manual advance
+                $db->prepare("
+                    INSERT INTO owner_advances (owner_id, source_type, advance_date, amount, description, repaid_amount, status, notes)
+                    VALUES (?, 'other', ?, ?, ?, ?, ?, ?)
+                ")->execute([
+                    (int)($_POST['owner_id'] ?? 0),
+                    $_POST['advance_date'] ?? date('Y-m-d'),
+                    $amount,
+                    $_POST['description'] ?? null,
+                    $repaid,
+                    $status,
+                    $_POST['notes'] ?? null,
+                ]);
+            } else {
+                $db->prepare("
+                    UPDATE owner_advances SET
+                        owner_id=?, advance_date=?, amount=?, description=?,
+                        repaid_amount=?, status=?, notes=?
+                    WHERE id=?
+                ")->execute([
+                    (int)($_POST['owner_id'] ?? 0),
+                    $_POST['advance_date'] ?? date('Y-m-d'),
+                    $amount,
+                    $_POST['description'] ?? null,
+                    $repaid,
+                    $status,
+                    $_POST['notes'] ?? null,
+                    $id,
+                ]);
+            }
+        }
+        header('Location: ' . rtrim(BASE_URL, '/') . '/capital/advances');
+        exit;
+    }
+
+    public function deleteAdvance(): void
+    {
+        $id = (int)($_GET['id'] ?? 0);
+        if ($id > 0) {
+            $db = \Database::connect();
+            // Simply delete - the advance is removed, business no longer owes this amount
+            $db->prepare("DELETE FROM owner_advances WHERE id=?")->execute([$id]);
+        }
+        header('Location: ' . rtrim(BASE_URL, '/') . '/capital/advances');
+        exit;
+    }
 }

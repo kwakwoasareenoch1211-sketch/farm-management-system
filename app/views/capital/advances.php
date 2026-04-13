@@ -19,6 +19,9 @@ $ownerColors = ['#3b82f6','#f59e0b','#10b981','#ef4444','#8b5cf6'];
         </p>
     </div>
     <a href="<?= $base ?>/capital" class="btn btn-outline-secondary btn-sm">Back to Capital</a>
+    <a href="<?= $base ?>/capital/advances/edit?id=0" class="btn btn-dark btn-sm">
+        <i class="bi bi-plus-circle me-1"></i> Add Manual Advance
+    </a>
 </div>
 
 <!-- OWNER SUMMARY CARDS -->
@@ -114,15 +117,25 @@ $ownerColors = ['#3b82f6','#f59e0b','#10b981','#ef4444','#8b5cf6'];
                         <td><span class="badge text-bg-<?= $statusBadge ?>"><?= ucfirst($a['status']) ?></span></td>
                         <td>
                             <?php if ($a['status'] !== 'repaid'): ?>
-                            <form method="POST" action="<?= $base ?>/capital/repay-advance" class="d-flex gap-1">
+                            <form method="POST" action="<?= $base ?>/capital/repay-advance" class="d-flex gap-1 flex-wrap">
                                 <input type="hidden" name="advance_id" value="<?= (int)$a['id'] ?>">
                                 <input type="number" name="repay_amount" step="0.01" min="0.01"
                                        max="<?= $outstanding ?>" placeholder="Amount"
-                                       class="form-control form-control-sm" style="width:100px;">
+                                       class="form-control form-control-sm" style="width:90px;">
                                 <button type="submit" class="btn btn-sm btn-success">Repay</button>
+                                <a href="<?= $base ?>/capital/advances/edit?id=<?= (int)$a['id'] ?>" class="btn btn-sm btn-outline-primary">Edit</a>
+                                <a href="<?= $base ?>/capital/advances/delete?id=<?= (int)$a['id'] ?>"
+                                   class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Delete this advance? The business will no longer owe this amount.')">Del</a>
                             </form>
                             <?php else: ?>
-                                <span class="text-success small"><i class="bi bi-check-circle-fill"></i> Repaid</span>
+                                <div class="d-flex gap-1">
+                                    <span class="text-success small"><i class="bi bi-check-circle-fill"></i> Repaid</span>
+                                    <a href="<?= $base ?>/capital/advances/edit?id=<?= (int)$a['id'] ?>" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                    <a href="<?= $base ?>/capital/advances/delete?id=<?= (int)$a['id'] ?>"
+                                       class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('Delete this advance record?')">Del</a>
+                                </div>
                             <?php endif; ?>
                         </td>
                     </tr>
