@@ -30,7 +30,7 @@ $sourceConfig = [
 <?php
 $printTitle    = 'Business Expenses Report';
 $printSubtitle = 'All expenses: manual, livestock, feed, medication, vaccination';
-$exportUrl     = $base . '/expenses/export?format=csv';
+$exportUrl     = $base . '/expenses/export?x=1';
 include BASE_PATH . 'app/views/layouts/print_toolbar.php';
 ?>
 

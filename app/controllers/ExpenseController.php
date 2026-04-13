@@ -151,45 +151,44 @@ class ExpenseController extends Controller
 
     public function export(): void
     {
+        require_once BASE_PATH . 'app/core/ExportHelper.php';
         $records = $this->expenseModel->all();
         $format  = $_GET['format'] ?? 'csv';
-
         $filename = 'business-expenses-' . date('Y-m-d');
 
-        if ($format === 'csv') {
-            header('Content-Type: text/csv');
-            header('Content-Disposition: attachment; filename="' . $filename . '.csv"');
-            header('Pragma: no-cache');
+        $sourceLabels = [
+            'manual'             => 'Manual Expense',
+            'livestock_purchase' => 'Livestock Purchase',
+            'feed'               => 'Feed',
+            'medication'         => 'Medication',
+            'vaccination'        => 'Vaccination',
+            'mortality_loss'     => 'Mortality Loss',
+        ];
 
-            $out = fopen('php://output', 'w');
-            fputcsv($out, ['Date', 'Description', 'Source', 'Category', 'Amount (GHS)', 'Status']);
+        $headers = ['Date', 'Description', 'Source', 'Category', 'Amount (GHS)', 'Paid (GHS)', 'Balance (GHS)', 'Status'];
+        $rows = [];
+        $total = 0;
 
-            $sourceLabels = [
-                'manual'             => 'Manual Expense',
-                'livestock_purchase' => 'Livestock Purchase',
-                'feed'               => 'Feed',
-                'medication'         => 'Medication',
-                'vaccination'        => 'Vaccination',
-                'mortality_loss'     => 'Mortality Loss',
+        foreach ($records as $r) {
+            $amt  = (float)($r['amount'] ?? 0);
+            $paid = (float)($r['amount_paid'] ?? $amt);
+            $bal  = $amt - $paid;
+            $total += $amt;
+            $rows[] = [
+                $r['date'] ?? '',
+                $r['title'] ?? '',
+                $sourceLabels[$r['expense_source'] ?? 'manual'] ?? ucfirst($r['expense_source'] ?? ''),
+                $r['category_name'] ?? 'Uncategorized',
+                number_format($amt, 2),
+                number_format($paid, 2),
+                number_format($bal, 2),
+                $r['payment_status'] ?? 'paid',
             ];
-
-            foreach ($records as $r) {
-                fputcsv($out, [
-                    $r['date'] ?? '',
-                    $r['title'] ?? '',
-                    $sourceLabels[$r['expense_source'] ?? 'manual'] ?? ucfirst($r['expense_source'] ?? ''),
-                    $r['category_name'] ?? 'Uncategorized',
-                    number_format((float)($r['amount'] ?? 0), 2),
-                    $r['payment_status'] ?? 'paid',
-                ]);
-            }
-
-            // Totals row
-            $total = array_sum(array_column($records, 'amount'));
-            fputcsv($out, ['', '', '', 'TOTAL', number_format($total, 2), '']);
-
-            fclose($out);
-            exit;
         }
+
+        // Totals row
+        $rows[] = ['', '', '', 'TOTAL', number_format($total, 2), '', '', ''];
+
+        ExportHelper::export($rows, $headers, $filename, $format);
     }
 }

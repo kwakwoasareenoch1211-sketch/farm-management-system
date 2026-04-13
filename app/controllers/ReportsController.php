@@ -1,6 +1,7 @@
 <?php
 
 require_once BASE_PATH . 'app/core/Controller.php';
+require_once BASE_PATH . 'app/core/ExportHelper.php';
 
 require_once BASE_PATH . 'app/models/ReportsSummary.php';
 require_once BASE_PATH . 'app/models/DecisionIntelligenceReport.php';
@@ -444,6 +445,118 @@ class ReportsController extends Controller
             'expenseTotals'   => $expenseModel->totals(),
             'totalBatches'    => count($batchModel->all()),
         ], 'admin');
+    }
+
+    /**
+     * Generic download handler for all reports
+     * Usage: /reports/download?type=feed&format=excel
+     */
+    public function download(): void
+    {
+        $type   = $_GET['type']   ?? 'expenses';
+        $format = $_GET['format'] ?? 'excel';
+
+        switch ($type) {
+            case 'feed':
+                require_once BASE_PATH . 'app/models/Feed.php';
+                $rows = (new Feed())->all();
+                $headers = ['Date', 'Batch', 'Feed Name', 'Quantity (kg)', 'Unit Cost (GHS)', 'Total Cost (GHS)', 'Notes'];
+                $data = array_map(fn($r) => [
+                    $r['record_date'] ?? '', $r['batch_code'] ?? '', $r['feed_name'] ?? '',
+                    $r['quantity_kg'] ?? 0, $r['unit_cost'] ?? 0,
+                    number_format((float)($r['quantity_kg'] ?? 0) * (float)($r['unit_cost'] ?? 0), 2),
+                    $r['notes'] ?? '',
+                ], $rows);
+                ExportHelper::export($data, $headers, 'feed-records-' . date('Y-m-d'), $format);
+                break;
+
+            case 'mortality':
+                require_once BASE_PATH . 'app/models/MortalityRecord.php';
+                $rows = (new MortalityRecord())->all();
+                $headers = ['Date', 'Batch', 'Quantity', 'Cause', 'Disposal', 'Notes'];
+                $data = array_map(fn($r) => [
+                    $r['record_date'] ?? '', ($r['batch_code'] ?? '') . ' ' . ($r['batch_name'] ?? ''),
+                    $r['quantity'] ?? 0, $r['cause'] ?? '', $r['disposal_method'] ?? '', $r['notes'] ?? '',
+                ], $rows);
+                ExportHelper::export($data, $headers, 'mortality-records-' . date('Y-m-d'), $format);
+                break;
+
+            case 'vaccination':
+                require_once BASE_PATH . 'app/models/VaccinationRecord.php';
+                $rows = (new VaccinationRecord())->all();
+                $headers = ['Date', 'Batch', 'Vaccine', 'Dose Qty', 'Disease Target', 'Cost (GHS)', 'Next Due', 'Notes'];
+                $data = array_map(fn($r) => [
+                    $r['record_date'] ?? '', ($r['batch_code'] ?? '') . ' ' . ($r['batch_name'] ?? ''),
+                    $r['vaccine_name'] ?? '', $r['dose_qty'] ?? 0, $r['disease_target'] ?? '',
+                    $r['cost_amount'] ?? 0, $r['next_due_date'] ?? '', $r['notes'] ?? '',
+                ], $rows);
+                ExportHelper::export($data, $headers, 'vaccination-records-' . date('Y-m-d'), $format);
+                break;
+
+            case 'medication':
+                require_once BASE_PATH . 'app/models/MedicationRecord.php';
+                $rows = (new MedicationRecord())->all();
+                $headers = ['Date', 'Batch', 'Medication', 'Qty Used', 'Unit Cost (GHS)', 'Total (GHS)', 'Notes'];
+                $data = array_map(fn($r) => [
+                    $r['record_date'] ?? '', ($r['batch_code'] ?? '') . ' ' . ($r['batch_name'] ?? ''),
+                    $r['medication_name'] ?? '', $r['quantity_used'] ?? 0, $r['unit_cost'] ?? 0,
+                    number_format((float)($r['quantity_used'] ?? 0) * (float)($r['unit_cost'] ?? 0), 2),
+                    $r['notes'] ?? '',
+                ], $rows);
+                ExportHelper::export($data, $headers, 'medication-records-' . date('Y-m-d'), $format);
+                break;
+
+            case 'batches':
+                $rows = (new Batch())->all();
+                $headers = ['Batch Code', 'Name', 'Purpose', 'Initial Qty', 'Current Qty', 'Start Date', 'Status'];
+                $data = array_map(fn($r) => [
+                    $r['batch_code'] ?? '', $r['batch_name'] ?? '', $r['production_purpose'] ?? '',
+                    $r['initial_quantity'] ?? 0, $r['current_quantity'] ?? 0,
+                    $r['start_date'] ?? '', $r['status'] ?? '',
+                ], $rows);
+                ExportHelper::export($data, $headers, 'batches-' . date('Y-m-d'), $format);
+                break;
+
+            case 'sales':
+                $rows = (new Sales())->all();
+                $headers = ['Date', 'Batch', 'Customer', 'Product', 'Qty', 'Unit Price', 'Total (GHS)', 'Status'];
+                $data = array_map(fn($r) => [
+                    $r['sale_date'] ?? '', ($r['batch_code'] ?? '') . ' ' . ($r['batch_name'] ?? ''),
+                    $r['customer_name'] ?? '', $r['product_type'] ?? '',
+                    $r['quantity'] ?? 0, $r['unit_price'] ?? 0,
+                    number_format((float)($r['total_amount'] ?? 0), 2),
+                    $r['payment_status'] ?? '',
+                ], $rows);
+                ExportHelper::export($data, $headers, 'sales-' . date('Y-m-d'), $format);
+                break;
+
+            case 'egg-production':
+                require_once BASE_PATH . 'app/models/EggProductionRecord.php';
+                $rows = (new EggProductionRecord())->all();
+                $headers = ['Date', 'Batch', 'Quantity', 'Trays', 'Notes'];
+                $data = array_map(fn($r) => [
+                    $r['record_date'] ?? '', ($r['batch_code'] ?? '') . ' ' . ($r['batch_name'] ?? ''),
+                    $r['quantity'] ?? 0, $r['trays_equivalent'] ?? 0, $r['notes'] ?? '',
+                ], $rows);
+                ExportHelper::export($data, $headers, 'egg-production-' . date('Y-m-d'), $format);
+                break;
+
+            case 'expenses':
+            default:
+                $rows = (new Expense())->all();
+                $headers = ['Date', 'Description', 'Source', 'Category', 'Amount (GHS)', 'Paid (GHS)', 'Status'];
+                $data = array_map(fn($r) => [
+                    $r['date'] ?? '', $r['title'] ?? '',
+                    ucfirst(str_replace('_', ' ', $r['expense_source'] ?? '')),
+                    $r['category_name'] ?? '', number_format((float)($r['amount'] ?? 0), 2),
+                    number_format((float)($r['amount_paid'] ?? $r['amount'] ?? 0), 2),
+                    $r['payment_status'] ?? 'paid',
+                ], $rows);
+                $total = array_sum(array_column($rows, 'amount'));
+                $data[] = ['', '', '', 'TOTAL', number_format($total, 2), '', ''];
+                ExportHelper::export($data, $headers, 'expenses-' . date('Y-m-d'), $format);
+                break;
+        }
     }
 
 }

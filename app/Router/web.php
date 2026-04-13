@@ -139,6 +139,7 @@ return [
     'reports/decisions' => ['ReportsController', 'decisionRecommendations'],
     'reports/custom' => ['ReportsController', 'customReports'],
     'reports/export' => ['ReportsController', 'exportCenter'],
+    'reports/download' => ['ReportsController', 'download'],
     'liabilities' => ['LiabilityController', 'index'],
     'liabilities/view' => ['LiabilityController', 'show'],
     'liabilities/create' => ['LiabilityController', 'create'],
