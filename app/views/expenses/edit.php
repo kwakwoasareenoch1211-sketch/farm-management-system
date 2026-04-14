@@ -1,22 +1,33 @@
-<div class="finance-card p-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+<?php
+$record  = $record  ?? [];
+$farms   = $farms   ?? [];
+$batches = $batches ?? [];
+$categories = $categories ?? [];
+$suppliers  = $suppliers  ?? [];
+$owners     = $owners     ?? [];
+$base = rtrim(BASE_URL, '/');
+?>
+<div class="finance-card p-4" style="max-width:900px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold mb-1">Edit Expense</h2>
-            <p class="text-muted mb-0">Update this expense record and keep financial totals accurate.</p>
+            <p class="text-muted mb-0">Update this expense record.</p>
         </div>
-        <a href="<?= rtrim(BASE_URL, '/') ?>/expenses" class="btn btn-outline-secondary">
+        <a href="<?= $base ?>/expenses" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-arrow-left me-1"></i> Back
         </a>
     </div>
 
-    <form method="POST" action="<?= rtrim(BASE_URL, '/') ?>/expenses/update">
+    <form method="POST" action="<?= $base ?>/expenses/update">
         <input type="hidden" name="id" value="<?= (int)$record['id'] ?>">
 
         <div class="row g-3">
+            <!-- PAID BY SELECTOR -->
             <?php include BASE_PATH . 'app/views/layouts/paid_by_edit_selector.php'; ?>
 
+            <!-- FARM -->
             <div class="col-md-4">
-                <label class="form-label">Farm</label>
+                <label class="form-label fw-semibold">Farm</label>
                 <select name="farm_id" class="form-select" required>
                     <option value="">Select farm</option>
                     <?php foreach ($farms as $farm): ?>
@@ -27,105 +38,92 @@
                 </select>
             </div>
 
+            <!-- DATE -->
             <div class="col-md-4">
-                <label class="form-label">Batch</label>
-                <select name="batch_id" class="form-select">
-                    <option value="">No batch linked</option>
-                    <?php foreach ($batches as $b): ?>
-                        <option value="<?= (int)$b['id'] ?>" <?= (int)$b['id'] === (int)($record['batch_id'] ?? 0) ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($b['batch_code'] . (!empty($b['batch_name']) ? ' - ' . $b['batch_name'] : '')) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+                <label class="form-label fw-semibold">Expense Date <span class="text-danger">*</span></label>
+                <input type="date" name="expense_date" class="form-control"
+                       value="<?= htmlspecialchars($record['expense_date'] ?? '') ?>" required>
             </div>
 
+            <!-- AMOUNT -->
             <div class="col-md-4">
-                <label class="form-label">Expense Date</label>
-                <input type="date" name="expense_date" class="form-control" value="<?= htmlspecialchars($record['expense_date'] ?? '') ?>" required>
+                <label class="form-label fw-semibold">Amount (GHS) <span class="text-danger">*</span></label>
+                <input type="number" step="0.01" name="amount" class="form-control"
+                       value="<?= htmlspecialchars($record['amount'] ?? '') ?>" required>
             </div>
 
-            <div class="col-md-6">
-                <label class="form-label">Expense Title</label>
-                <input type="text" name="expense_title" class="form-control" value="<?= htmlspecialchars($record['expense_title'] ?? '') ?>" required>
+            <!-- DESCRIPTION -->
+            <div class="col-12">
+                <label class="form-label fw-semibold">Description <span class="text-danger">*</span></label>
+                <input type="text" name="description" class="form-control"
+                       value="<?= htmlspecialchars($record['description'] ?? '') ?>"
+                       placeholder="What was this expense for?" required>
             </div>
 
-            <div class="col-md-6">
-                <label class="form-label">Amount</label>
-                <input type="number" step="0.01" name="amount" class="form-control" value="<?= htmlspecialchars($record['amount'] ?? '') ?>" required>
-            </div>
-
+            <!-- CATEGORY -->
             <div class="col-md-4">
-                <label class="form-label">Category</label>
+                <label class="form-label fw-semibold">Category</label>
                 <select name="category_id" class="form-select">
                     <option value="">Uncategorized</option>
-                    <?php foreach ($categories as $category): ?>
-                        <option value="<?= (int)$category['id'] ?>" <?= (int)$category['id'] === (int)($record['category_id'] ?? 0) ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($category['category_name']) ?>
+                    <?php foreach ($categories as $cat): ?>
+                        <option value="<?= (int)$cat['id'] ?>" <?= (int)$cat['id'] === (int)($record['category_id'] ?? 0) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($cat['category_name']) ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
             </div>
 
+            <!-- PAYMENT METHOD -->
             <div class="col-md-4">
-                <label class="form-label">Supplier</label>
-                <select name="supplier_id" class="form-select">
-                    <option value="">No supplier linked</option>
-                    <?php foreach ($suppliers as $supplier): ?>
-                        <option value="<?= (int)$supplier['id'] ?>" <?= (int)$supplier['id'] === (int)($record['supplier_id'] ?? 0) ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($supplier['supplier_name']) ?>
-                        </option>
-                    <?php endforeach; ?>
+                <label class="form-label fw-semibold">Payment Method</label>
+                <select name="payment_method" class="form-select">
+                    <?php $pm = $record['payment_method'] ?? 'cash'; ?>
+                    <option value="cash" <?= $pm === 'cash' ? 'selected' : '' ?>>Cash</option>
+                    <option value="bank_transfer" <?= $pm === 'bank_transfer' ? 'selected' : '' ?>>Bank Transfer</option>
+                    <option value="cheque" <?= $pm === 'cheque' ? 'selected' : '' ?>>Cheque</option>
+                    <option value="mobile_money" <?= $pm === 'mobile_money' ? 'selected' : '' ?>>Mobile Money</option>
                 </select>
             </div>
 
+            <!-- PAYMENT STATUS -->
             <div class="col-md-4">
-                <label class="form-label">Reference No</label>
-                <input type="text" name="reference_no" class="form-control" value="<?= htmlspecialchars($record['reference_no'] ?? '') ?>">
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label">Payment Method</label>
-                <select name="payment_method" class="form-select" required>
-                    <?php $paymentMethod = $record['payment_method'] ?? 'cash'; ?>
-                    <option value="cash" <?= $paymentMethod === 'cash' ? 'selected' : '' ?>>Cash</option>
-                    <option value="bank" <?= $paymentMethod === 'bank' ? 'selected' : '' ?>>Bank</option>
-                    <option value="mobile_money" <?= $paymentMethod === 'mobile_money' ? 'selected' : '' ?>>Mobile Money</option>
-                    <option value="credit" <?= $paymentMethod === 'credit' ? 'selected' : '' ?>>Credit</option>
-                    <option value="other" <?= $paymentMethod === 'other' ? 'selected' : '' ?>>Other</option>
+                <label class="form-label fw-semibold">Payment Status</label>
+                <select name="payment_status" class="form-select">
+                    <?php $ps = $record['payment_status'] ?? 'paid'; ?>
+                    <option value="paid"    <?= $ps === 'paid'    ? 'selected' : '' ?>>Paid</option>
+                    <option value="partial" <?= $ps === 'partial' ? 'selected' : '' ?>>Partial</option>
+                    <option value="unpaid"  <?= $ps === 'unpaid'  ? 'selected' : '' ?>>Unpaid</option>
                 </select>
             </div>
 
+            <!-- AMOUNT PAID (shown when partial) -->
             <div class="col-md-4">
-                <label class="form-label">Payment Status</label>
-                <?php $paymentStatus = $record['payment_status'] ?? 'paid'; ?>
-                <select name="payment_status" class="form-select" required>
-                    <option value="paid" <?= $paymentStatus === 'paid' ? 'selected' : '' ?>>Paid</option>
-                    <option value="partial" <?= $paymentStatus === 'partial' ? 'selected' : '' ?>>Partial</option>
-                    <option value="unpaid" <?= $paymentStatus === 'unpaid' ? 'selected' : '' ?>>Unpaid</option>
-                </select>
+                <label class="form-label fw-semibold">Amount Paid (GHS)</label>
+                <input type="number" step="0.01" min="0" name="amount_paid" class="form-control"
+                       value="<?= htmlspecialchars($record['amount_paid'] ?? 0) ?>">
             </div>
 
+            <!-- REFERENCE -->
             <div class="col-md-4">
-                <label class="form-label">Created By</label>
-                <select name="created_by" class="form-select">
-                    <option value="">Not specified</option>
-                    <?php foreach ($users as $user): ?>
-                        <option value="<?= (int)$user['id'] ?>" <?= (int)$user['id'] === (int)($record['created_by'] ?? 0) ? 'selected' : '' ?>>
-                            <?= htmlspecialchars(($user['full_name'] ?: $user['username']) . ' (#' . $user['id'] . ')') ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+                <label class="form-label fw-semibold">Reference No.</label>
+                <input type="text" name="expense_reference" class="form-control"
+                       value="<?= htmlspecialchars($record['expense_reference'] ?? '') ?>"
+                       placeholder="Receipt / invoice number">
             </div>
 
-            <div class="col-md-12">
-                <label class="form-label">Description</label>
-                <textarea name="description" class="form-control" rows="4"><?= htmlspecialchars($record['description'] ?? '') ?></textarea>
+            <!-- NOTES -->
+            <div class="col-12">
+                <label class="form-label fw-semibold">Notes</label>
+                <textarea name="notes" class="form-control" rows="2"
+                          placeholder="Additional notes"><?= htmlspecialchars($record['notes'] ?? '') ?></textarea>
             </div>
         </div>
 
-        <div class="mt-4">
-            <button type="submit" class="btn btn-dark">Update Expense</button>
-            <a href="<?= rtrim(BASE_URL, '/') ?>/expenses" class="btn btn-outline-secondary">Cancel</a>
+        <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-dark px-4">
+                <i class="bi bi-check-circle me-1"></i> Update Expense
+            </button>
+            <a href="<?= $base ?>/expenses" class="btn btn-outline-secondary">Cancel</a>
         </div>
     </form>
 </div>

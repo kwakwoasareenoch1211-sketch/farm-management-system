@@ -194,6 +194,7 @@ $items           = $items ?? [];
             </thead>
             <tbody>
                 <?php foreach ($items as $item):
+                    if (empty($item['item_name'])) continue; // skip corrupted rows
                     $stock = (float)($item['current_stock'] ?? 0);
                     $reorder = (float)($item['reorder_level'] ?? 0);
                     $value = $stock * (float)($item['unit_cost'] ?? 0);
@@ -202,7 +203,7 @@ $items           = $items ?? [];
                     $statusLabel = $isLow ? 'Low' : ($stock == 0 ? 'Out' : 'OK');
                 ?>
                 <tr>
-                    <td class="fw-semibold"><?= htmlspecialchars($item['item_name']) ?></td>
+                    <td class="fw-semibold"><?= htmlspecialchars($item['item_name'] ?? '') ?></td>
                     <td><span class="badge text-bg-secondary"><?= htmlspecialchars(ucfirst($item['category'] ?? 'Other')) ?></span></td>
                     <td class="<?= $isLow ? 'text-danger fw-bold' : '' ?>"><?= number_format($stock, 2) ?></td>
                     <td class="text-muted small"><?= htmlspecialchars($item['unit_of_measure'] ?? '') ?></td>
@@ -212,8 +213,8 @@ $items           = $items ?? [];
                     <td><span class="badge text-bg-<?= $statusBadge ?>"><?= $statusLabel ?></span></td>
                     <td>
                         <div class="d-flex gap-1">
-                            <a href="<?= $base ?>/inventory/items/edit?id=<?= (int)$item['id'] ?>" class="btn btn-sm btn-outline-primary">Edit</a>
-                            <a href="<?= $base ?>/inventory/items/delete?id=<?= (int)$item['id'] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this item?')">Del</a>
+                            <a href="<?= $base ?>/inventory/items/edit?id=<?= (int)($item['id'] ?? 0) ?>" class="btn btn-sm btn-outline-primary">Edit</a>
+                            <a href="<?= $base ?>/inventory/items/delete?id=<?= (int)($item['id'] ?? 0) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this item?')">Del</a>
                         </div>
                     </td>
                 </tr>
